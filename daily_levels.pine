@@ -465,6 +465,19 @@ var float PML_val  = na
 var float TDH_val  = na
 var float TDL_val  = na
 
+var int YHOD_bar = na
+var int YLOD_bar = na
+var int PMH_bar  = na
+var int PML_bar  = na
+var int TDH_bar  = na
+var int TDL_bar  = na
+
+// Internal tracking — records which bar set today's running high/low
+var int   today_high_bar     = na
+var int   today_low_bar      = na
+var float today_high_tracked = na
+var float today_low_tracked  = na
+
 var label EMA1_TF1Label = na
 var label EMA2_TF1Label = na
 var label EMA3_TF1Label = na
@@ -529,9 +542,33 @@ YLOD_val := request.security(syminfo.tickerid, "1D", low[1],   lookahead=barmerg
 PMH_val  := request.security(syminfo.tickerid, "1D", high[1],  lookahead=barmerge.lookahead_on)
 PML_val  := request.security(syminfo.tickerid, "1D", low[1],   lookahead=barmerge.lookahead_on)
 
-// Two-Day High/Low  (rolling 2-day range)
-TDH_val  := request.security(syminfo.tickerid, "1D", ta.highest(high, 2)[1], lookahead=barmerge.lookahead_on)
-TDL_val  := request.security(syminfo.tickerid, "1D", ta.lowest(low,  2)[1],  lookahead=barmerge.lookahead_on)
+// Today's High/Low  (current session)
+TDH_val  := request.security(syminfo.tickerid, "1D", high, lookahead=barmerge.lookahead_on)
+TDL_val  := request.security(syminfo.tickerid, "1D", low,  lookahead=barmerge.lookahead_on)
+
+// Track which bar sets today's high/low; roll into YHOD/YLOD at session open
+if session.isfirstbar
+    // Carry forward the bar where yesterday's high/low actually occurred
+    YHOD_bar := today_high_bar
+    YLOD_bar := today_low_bar
+    PMH_bar  := today_high_bar
+    PML_bar  := today_low_bar
+    // Reset today's tracking
+    today_high_tracked := high
+    today_low_tracked  := low
+    today_high_bar     := bar_index
+    today_low_bar      := bar_index
+    TDH_bar            := bar_index
+    TDL_bar            := bar_index
+else
+    if high >= today_high_tracked
+        today_high_tracked := high
+        today_high_bar     := bar_index
+        TDH_bar            := bar_index
+    if low <= today_low_tracked
+        today_low_tracked  := low
+        today_low_bar      := bar_index
+        TDL_bar            := bar_index
 
 // This updated function now accepts user-defined colors for the difference text
 f_addTableRow(tableId, row, name, value, rawDiff, bgColor, nameValueTextColor, posDiffColorParam, negDiffColorParam, textSize) =>
@@ -764,22 +801,22 @@ if showDrawings
             EMA4_TF4Label := label.new(bar_index + EMA4_TF4Offset, EMA4_TF4_val, text=EMA4_TF4LabelPriceBool ? str.tostring(EMA4_TF4) + ' '+EMA4_TF4LabelText + ' '+ str.tostring(EMA4_TF4_val,format.mintick) : EMA4_TF4LabelText, color=EMA4_TF4Colour, style=label.style_label_left, textcolor=EMA4_TF4LabelTextColour, size=txt_size, textalign=EMA4_TF4LabelAlign)
 
         if showKeyLevels
-            YHOD_Line := line.new(bar_index_open, YHOD_val, bar_index+10, YHOD_val, color=YHOD_Colour, style=YHOD_LineStyle, width=YHOD_LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+            YHOD_Line := line.new(x1=YHOD_bar, y1=YHOD_val, x2=bar_index+10, y2=YHOD_val, color=YHOD_Colour, style=YHOD_LineStyle, width=YHOD_LineWidth, extend=extend.none)
             YHOD_Label := label.new(bar_index + KL_LabelOffset, YHOD_val, text='YHOD ' + str.tostring(YHOD_val, format.mintick), color=YHOD_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
 
-            YLOD_Line := line.new(bar_index_open, YLOD_val, bar_index+10, YLOD_val, color=YLOD_Colour, style=YLOD_LineStyle, width=YLOD_LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+            YLOD_Line := line.new(x1=YLOD_bar, y1=YLOD_val, x2=bar_index+10, y2=YLOD_val, color=YLOD_Colour, style=YLOD_LineStyle, width=YLOD_LineWidth, extend=extend.none)
             YLOD_Label := label.new(bar_index + KL_LabelOffset, YLOD_val, text='YLOD ' + str.tostring(YLOD_val, format.mintick), color=YLOD_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
 
-            PMH_Line := line.new(bar_index_open, PMH_val, bar_index+10, PMH_val, color=PMH_Colour, style=PMH_LineStyle, width=PMH_LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+            PMH_Line := line.new(x1=PMH_bar, y1=PMH_val, x2=bar_index+10, y2=PMH_val, color=PMH_Colour, style=PMH_LineStyle, width=PMH_LineWidth, extend=extend.none)
             PMH_Label := label.new(bar_index + KL_LabelOffset, PMH_val, text='PMH ' + str.tostring(PMH_val, format.mintick), color=PMH_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
 
-            PML_Line := line.new(bar_index_open, PML_val, bar_index+10, PML_val, color=PML_Colour, style=PML_LineStyle, width=PML_LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+            PML_Line := line.new(x1=PML_bar, y1=PML_val, x2=bar_index+10, y2=PML_val, color=PML_Colour, style=PML_LineStyle, width=PML_LineWidth, extend=extend.none)
             PML_Label := label.new(bar_index + KL_LabelOffset, PML_val, text='PML ' + str.tostring(PML_val, format.mintick), color=PML_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
 
-            TDH_Line := line.new(bar_index_open, TDH_val, bar_index+10, TDH_val, color=TDH_Colour, style=TDH_LineStyle, width=TDH_LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+            TDH_Line := line.new(x1=TDH_bar, y1=TDH_val, x2=bar_index+10, y2=TDH_val, color=TDH_Colour, style=TDH_LineStyle, width=TDH_LineWidth, extend=extend.none)
             TDH_Label := label.new(bar_index + KL_LabelOffset, TDH_val, text='TDH ' + str.tostring(TDH_val, format.mintick), color=TDH_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
 
-            TDL_Line := line.new(bar_index_open, TDL_val, bar_index+10, TDL_val, color=TDL_Colour, style=TDL_LineStyle, width=TDL_LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+            TDL_Line := line.new(x1=TDL_bar, y1=TDL_val, x2=bar_index+10, y2=TDL_val, color=TDL_Colour, style=TDL_LineStyle, width=TDL_LineWidth, extend=extend.none)
             TDL_Label := label.new(bar_index + KL_LabelOffset, TDL_val, text='TDL ' + str.tostring(TDL_val, format.mintick), color=TDL_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
 
 
