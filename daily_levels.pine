@@ -472,11 +472,20 @@ var int PML_bar  = na
 var int TDH_bar  = na
 var int TDL_bar  = na
 
-// Internal tracking — records which bar set today's running high/low
+// Internal tracking — records which bar set today's running high/low (regular session)
 var int   today_high_bar     = na
 var int   today_low_bar      = na
 var float today_high_tracked = na
 var float today_low_tracked  = na
+
+// Internal tracking — records which bar set the extended session high/low (for PMH/PML)
+var int   ext_high_bar     = na
+var int   ext_low_bar      = na
+var float ext_high_tracked = na
+var float ext_low_tracked  = na
+var int   ext_day_tracked  = na
+var float pmh_tracked      = na  // previous extended day's high (used as PMH_val)
+var float pml_tracked      = na  // previous extended day's low  (used as PML_val)
 
 var label EMA1_TF1Label = na
 var label EMA2_TF1Label = na
@@ -538,9 +547,10 @@ EMA4_TF4_val := request.security(syminfo.tickerid, EMA_TF4_tf, ta.ema(src,EMA4_T
 YHOD_val := request.security(syminfo.tickerid, "1D", high[1],  lookahead=barmerge.lookahead_on)
 YLOD_val := request.security(syminfo.tickerid, "1D", low[1],   lookahead=barmerge.lookahead_on)
 
-// Previous Market High/Low  (prior day — same as YHD/YLD on daily; on intraday uses prior session)
-PMH_val  := request.security(syminfo.tickerid, "1D", high[1],  lookahead=barmerge.lookahead_on)
-PML_val  := request.security(syminfo.tickerid, "1D", low[1],   lookahead=barmerge.lookahead_on)
+// Previous Market High/Low — derived from direct bar tracking across the full extended session
+// (pre-market + regular + after-hours), updated in the ext tracking block below
+PMH_val  := pmh_tracked
+PML_val  := pml_tracked
 
 // Today's High/Low  (current session)
 TDH_val  := request.security(syminfo.tickerid, "1D", high, lookahead=barmerge.lookahead_on)
@@ -548,11 +558,9 @@ TDL_val  := request.security(syminfo.tickerid, "1D", low,  lookahead=barmerge.lo
 
 // Track which bar sets today's high/low; roll into YHOD/YLOD at session open
 if session.isfirstbar
-    // Carry forward the bar where yesterday's high/low actually occurred
+    // Carry forward the bar where yesterday's regular-session high/low occurred
     YHOD_bar := today_high_bar
     YLOD_bar := today_low_bar
-    PMH_bar  := today_high_bar
-    PML_bar  := today_low_bar
     // Reset today's tracking
     today_high_tracked := high
     today_low_tracked  := low
@@ -560,7 +568,7 @@ if session.isfirstbar
     today_low_bar      := bar_index
     TDH_bar            := bar_index
     TDL_bar            := bar_index
-else
+else if session.ismarket
     if high >= today_high_tracked
         today_high_tracked := high
         today_high_bar     := bar_index
@@ -569,6 +577,28 @@ else
         today_low_tracked  := low
         today_low_bar      := bar_index
         TDL_bar            := bar_index
+
+// Track extended session (pre-market + regular + after-hours) high/low for PMH/PML
+// Rolls over when the calendar day changes — fires on the first pre-market bar of a new day
+is_new_ext_day = na(ext_day_tracked) or dayofmonth != ext_day_tracked
+if is_new_ext_day
+    if not na(ext_high_bar)
+        PMH_bar     := ext_high_bar
+        PML_bar     := ext_low_bar
+        pmh_tracked := ext_high_tracked
+        pml_tracked := ext_low_tracked
+    ext_day_tracked  := dayofmonth
+    ext_high_tracked := high
+    ext_low_tracked  := low
+    ext_high_bar     := bar_index
+    ext_low_bar      := bar_index
+else
+    if high >= ext_high_tracked
+        ext_high_tracked := high
+        ext_high_bar     := bar_index
+    if low <= ext_low_tracked
+        ext_low_tracked  := low
+        ext_low_bar      := bar_index
 
 // This updated function now accepts user-defined colors for the difference text
 f_addTableRow(tableId, row, name, value, rawDiff, bgColor, nameValueTextColor, posDiffColorParam, negDiffColorParam, textSize) =>
