@@ -5,8 +5,8 @@ A Pine Script v6 indicator for TradingView that plots EMA levels from multiple t
 ## Features
 
 - **Multi-timeframe EMAs** — plots 4 EMAs across 4 configurable timeframes (default: 30min, 1hr, 4hr, 1D)
-- **Key levels** — plots Yesterday's High/Low (YHOD/YLOD), Previous Month High/Low (PMH/PML), and Today's High/Low (TDH/TDL)
-- **EMA table** — on-chart table showing all EMA values, current price, and distance (diff) from price, with colour-coded rows
+- **Key levels** — plots Yesterday's High/Low (YHOD/YLOD), Pre-Market High/Low (PMH/PML — the high/low of the overnight period between yesterday's close and today's open), and Today's High/Low (TDH/TDL); each line is anchored to the candle where the level occurred
+- **EMA table** — optional on-chart table showing all EMA values, current price, and distance (diff) from price, with colour-coded rows (off by default)
 - **Alert settings** — built-in alert support
 - **Full customisation** — control colours, line styles, label text, offsets, alignment, and text size for every level individually
 
@@ -17,7 +17,7 @@ A Pine Script v6 indicator for TradingView that plots EMA levels from multiple t
 | EMA settings | Source, timeframe selection, and EMA lengths for each of the 4 timeframes |
 | Price level | Line drawing mode (from day start / offset / full chart), visibility toggles per EMA |
 | Label | Text, colour, alignment, offset, and price display per EMA label |
-| Key Levels | YHOD, YLOD, PMH, PML, TDH, TDL — colours, line style, label, price axis display |
+| Key Levels | YHOD, YLOD, PMH, PML, TDH, TDL — colours, line style (PMH/PML default dotted, TDH/TDL default solid), label, price axis display |
 | Table Display | Position, layout (Standard/Ordered), text size, header/row colours, diff colour coding |
 | Price axis visibility | Which chart timeframes the indicator renders on (seconds, minutes, hours, days, etc.) |
 
@@ -33,6 +33,6 @@ A Pine Script v6 indicator for TradingView that plots EMA levels from multiple t
 ## Usage
 
 1. Open TradingView Pine Script editor
-2. Paste the contents of `daily_levels.txt`
+2. Paste the contents of `daily_levels.pine`
 3. Click **Add to chart**
 4. Adjust timeframes, EMA lengths, and colours in the indicator settings to suit your setup
