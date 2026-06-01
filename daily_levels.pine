@@ -219,7 +219,7 @@ monthMin= input.int(1, '', 1, 12, group='Price axis visibility', inline='month')
 monthMax= input.int(12, '-', 1, 12, group='Price axis visibility', inline='month')
 
 // NEW -- Inputs for table display
-showTable = input.bool(true, title='Show EMA Table', group='Table Display')
+showTable = input.bool(false, title='Show EMA Table', group='Table Display')
 tablePosition = input.string(position.top_right, 'Table Position', options=[position.top_left, position.top_center, position.top_right, position.middle_left, position.middle_center, position.middle_right, position.bottom_left, position.bottom_center, position.bottom_right], group='Table Display')
 // Add this line with your other Table Display inputs
 tableLayout = input.string("Ordered", "Table Layout", options=["Standard", "Ordered"], group="Table Display")
@@ -303,22 +303,22 @@ EMA3_TF4Colour = input(title='', defval=color.rgb(0, 255, 255), group='Price lev
 EMA4_TF4Colour= input(title='', defval=color.rgb(0, 255, 255), group='Price level', inline='EMA4_TF4')
 
 // variables that handle line width
-EMA1_TF1LineWidth = input(2, 'Thickness', group='Price level', inline='EMA1_TF1')
-EMA2_TF1LineWidth= input(2, 'Thickness', group='Price level', inline='EMA2_TF1')
-EMA3_TF1LineWidth= input(2, 'Thickness', group='Price level', inline='EMA3_TF1')
-EMA4_TF1LineWidth = input(2, 'Thickness', group='Price level', inline='EMA4_TF1')
-EMA1_TF2LineWidth = input(2, 'Thickness', group='Price level', inline='EMA1_TF2')
-EMA2_TF2LineWidth= input(2, 'Thickness', group='Price level', inline='EMA2_TF2')
-EMA3_TF2LineWidth= input(2, 'Thickness', group='Price level', inline='EMA3_TF2')
-EMA4_TF2LineWidth = input(2, 'Thickness', group='Price level', inline='EMA4_TF2')
-EMA1_TF3LineWidth = input(2, 'Thickness', group='Price level', inline='EMA1_TF3')
-EMA2_TF3LineWidth= input(2, 'Thickness', group='Price level', inline='EMA2_TF3')
-EMA3_TF3LineWidth= input(2, 'Thickness', group='Price level', inline='EMA3_TF3')
-EMA4_TF3LineWidth = input(2, 'Thickness', group='Price level', inline='EMA4_TF3')
-EMA1_TF4LineWidth = input(2, 'Thickness', group='Price level', inline='EMA1_TF4')
-EMA2_TF4LineWidth= input(2, 'Thickness', group='Price level', inline='EMA2_TF4')
-EMA3_TF4LineWidth= input(2, 'Thickness', group='Price level', inline='EMA3_TF4')
-EMA4_TF4LineWidth = input(2, 'Thickness', group='Price level', inline='EMA4_TF4')
+EMA1_TF1LineWidth = input(1, 'Thickness', group='Price level', inline='EMA1_TF1')
+EMA2_TF1LineWidth= input(1, 'Thickness', group='Price level', inline='EMA2_TF1')
+EMA3_TF1LineWidth= input(1, 'Thickness', group='Price level', inline='EMA3_TF1')
+EMA4_TF1LineWidth = input(1, 'Thickness', group='Price level', inline='EMA4_TF1')
+EMA1_TF2LineWidth = input(1, 'Thickness', group='Price level', inline='EMA1_TF2')
+EMA2_TF2LineWidth= input(1, 'Thickness', group='Price level', inline='EMA2_TF2')
+EMA3_TF2LineWidth= input(1, 'Thickness', group='Price level', inline='EMA3_TF2')
+EMA4_TF2LineWidth = input(1, 'Thickness', group='Price level', inline='EMA4_TF2')
+EMA1_TF3LineWidth = input(1, 'Thickness', group='Price level', inline='EMA1_TF3')
+EMA2_TF3LineWidth= input(1, 'Thickness', group='Price level', inline='EMA2_TF3')
+EMA3_TF3LineWidth= input(1, 'Thickness', group='Price level', inline='EMA3_TF3')
+EMA4_TF3LineWidth = input(1, 'Thickness', group='Price level', inline='EMA4_TF3')
+EMA1_TF4LineWidth = input(1, 'Thickness', group='Price level', inline='EMA1_TF4')
+EMA2_TF4LineWidth= input(1, 'Thickness', group='Price level', inline='EMA2_TF4')
+EMA3_TF4LineWidth= input(1, 'Thickness', group='Price level', inline='EMA3_TF4')
+EMA4_TF4LineWidth = input(1, 'Thickness', group='Price level', inline='EMA4_TF4')
 
 // variables that handle line style options insettings menu
 EMA1_TF1StyleOption = input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA1_TF1')
@@ -389,20 +389,20 @@ TDH_Colour  = input(title='TDH',  defval=color.rgb(180, 0, 255), group='Key Leve
 TDL_Colour  = input(title='TDL',  defval=color.rgb(180, 0, 255), group='Key Levels', inline='TDL')
 
 // Line widths
-YHOD_LineWidth = input(2, 'Thickness', group='Key Levels', inline='YHOD')
-YLOD_LineWidth = input(2, 'Thickness', group='Key Levels', inline='YLOD')
-PMH_LineWidth  = input(2, 'Thickness', group='Key Levels', inline='PMH')
-PML_LineWidth  = input(2, 'Thickness', group='Key Levels', inline='PML')
-TDH_LineWidth  = input(2, 'Thickness', group='Key Levels', inline='TDH')
-TDL_LineWidth  = input(2, 'Thickness', group='Key Levels', inline='TDL')
+YHOD_LineWidth = input(1, 'Thickness', group='Key Levels', inline='YHOD')
+YLOD_LineWidth = input(1, 'Thickness', group='Key Levels', inline='YLOD')
+PMH_LineWidth  = input(1, 'Thickness', group='Key Levels', inline='PMH')
+PML_LineWidth  = input(1, 'Thickness', group='Key Levels', inline='PML')
+TDH_LineWidth  = input(1, 'Thickness', group='Key Levels', inline='TDH')
+TDL_LineWidth  = input(1, 'Thickness', group='Key Levels', inline='TDL')
 
 // Line styles
 YHOD_StyleOpt = input.string('dashed (╌)', title='', options=['solid (─)','dotted (..)','dashed (╌)'], group='Key Levels', inline='YHOD')
 YLOD_StyleOpt = input.string('dashed (╌)', title='', options=['solid (─)','dotted (..)','dashed (╌)'], group='Key Levels', inline='YLOD')
-PMH_StyleOpt  = input.string('dashed (╌)', title='', options=['solid (─)','dotted (..)','dashed (╌)'], group='Key Levels', inline='PMH')
-PML_StyleOpt  = input.string('dashed (╌)', title='', options=['solid (─)','dotted (..)','dashed (╌)'], group='Key Levels', inline='PML')
-TDH_StyleOpt  = input.string('dashed (╌)', title='', options=['solid (─)','dotted (..)','dashed (╌)'], group='Key Levels', inline='TDH')
-TDL_StyleOpt  = input.string('dashed (╌)', title='', options=['solid (─)','dotted (..)','dashed (╌)'], group='Key Levels', inline='TDL')
+PMH_StyleOpt  = input.string('dotted (..)', title='', options=['solid (─)','dotted (..)','dashed (╌)'], group='Key Levels', inline='PMH')
+PML_StyleOpt  = input.string('dotted (..)', title='', options=['solid (─)','dotted (..)','dashed (╌)'], group='Key Levels', inline='PML')
+TDH_StyleOpt  = input.string('solid (─)',   title='', options=['solid (─)','dotted (..)','dashed (╌)'], group='Key Levels', inline='TDH')
+TDL_StyleOpt  = input.string('solid (─)',   title='', options=['solid (─)','dotted (..)','dashed (╌)'], group='Key Levels', inline='TDL')
 
 YHOD_LineStyle = YHOD_StyleOpt == 'dotted (..)' ? line.style_dotted : YHOD_StyleOpt == 'dashed (╌)' ? line.style_dashed : line.style_solid
 YLOD_LineStyle = YLOD_StyleOpt == 'dotted (..)' ? line.style_dotted : YLOD_StyleOpt == 'dashed (╌)' ? line.style_dashed : line.style_solid
@@ -770,89 +770,89 @@ if showDrawings
         if EMA1_TF1Level
             EMA1_TF1Line := line.new(bar_index_open, EMA1_TF1_val, bar_index+10, EMA1_TF1_val, color=EMA1_TF1Colour, style=EMA1_TF1LineStyle, width=EMA1_TF1LineWidth, extend=levelSetting=='c' ? extend.both : extend.right) 
         if EMA1_TF1LabelBool
-            EMA1_TF1Label := label.new(bar_index + EMA1_TF1Offset, EMA1_TF1_val, text=EMA1_TF1LabelPriceBool ? str.tostring(EMA1_TF1) + ' '+EMA1_TF1LabelText + ' '+ str.tostring(EMA1_TF1_val,format.mintick) : EMA1_TF1LabelText, color=EMA1_TF1Colour, style=label.style_label_left, textcolor=EMA1_TF1LabelTextColour, size=txt_size, textalign=EMA1_TF1LabelAlign) //size=size.large, 
+            EMA1_TF1Label := label.new(bar_index + EMA1_TF1Offset, EMA1_TF1_val, text=EMA1_TF1LabelPriceBool ? str.tostring(EMA1_TF1) + ' '+EMA1_TF1LabelText + ' '+ str.tostring(EMA1_TF1_val,format.mintick) : EMA1_TF1LabelText, color=EMA1_TF1Colour, style=label.style_none, textcolor=EMA1_TF1Colour, size=txt_size, textalign=EMA1_TF1LabelAlign) //size=size.large, 
         if EMA2_TF1Level
             EMA2_TF1Line := line.new(bar_index_open, EMA2_TF1_val, bar_index+10, EMA2_TF1_val, color=EMA2_TF1Colour, style=EMA2_TF1LineStyle, width=EMA2_TF1LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA2_TF1LabelBool
-            EMA2_TF1Label := label.new(bar_index + EMA2_TF1Offset, EMA2_TF1_val, text=EMA2_TF1LabelPriceBool ? str.tostring(EMA2_TF1) + ' '+EMA2_TF1LabelText + ' '+ str.tostring(EMA2_TF1_val,format.mintick) : EMA2_TF1LabelText, color=EMA2_TF1Colour, style=label.style_label_left, textcolor=EMA2_TF1LabelTextColour, size=txt_size, textalign=EMA2_TF1LabelAlign)
+            EMA2_TF1Label := label.new(bar_index + EMA2_TF1Offset, EMA2_TF1_val, text=EMA2_TF1LabelPriceBool ? str.tostring(EMA2_TF1) + ' '+EMA2_TF1LabelText + ' '+ str.tostring(EMA2_TF1_val,format.mintick) : EMA2_TF1LabelText, color=EMA2_TF1Colour, style=label.style_none, textcolor=EMA2_TF1Colour, size=txt_size, textalign=EMA2_TF1LabelAlign)
         if EMA3_TF1Level
             EMA3_TF1Line := line.new(bar_index_open, EMA3_TF1_val, bar_index+10, EMA3_TF1_val, color=EMA3_TF1Colour, style=EMA3_TF1LineStyle, width=EMA3_TF1LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA3_TF1LabelBool
-            EMA3_TF1Label := label.new(bar_index + EMA3_TF1Offset, EMA3_TF1_val, text=EMA3_TF1LabelPriceBool ? str.tostring(EMA3_TF1) + ' '+EMA3_TF1LabelText + ' '+ str.tostring(EMA3_TF1_val,format.mintick) : EMA3_TF1LabelText, color=EMA3_TF1Colour, style=label.style_label_left, textcolor=EMA3_TF1LabelTextColour, size=txt_size, textalign=EMA3_TF1LabelAlign)
+            EMA3_TF1Label := label.new(bar_index + EMA3_TF1Offset, EMA3_TF1_val, text=EMA3_TF1LabelPriceBool ? str.tostring(EMA3_TF1) + ' '+EMA3_TF1LabelText + ' '+ str.tostring(EMA3_TF1_val,format.mintick) : EMA3_TF1LabelText, color=EMA3_TF1Colour, style=label.style_none, textcolor=EMA3_TF1Colour, size=txt_size, textalign=EMA3_TF1LabelAlign)
         if EMA4_TF1Level
             EMA4_TF1Line := line.new(bar_index_open, EMA4_TF1_val, bar_index+10, EMA4_TF1_val, color=EMA4_TF1Colour, style=EMA4_TF1LineStyle, width=EMA4_TF1LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA4_TF1LabelBool
-            EMA4_TF1Label := label.new(bar_index + EMA4_TF1Offset, EMA4_TF1_val, text=EMA4_TF1LabelPriceBool ? str.tostring(EMA4_TF1) + ' '+EMA4_TF1LabelText + ' '+ str.tostring(EMA4_TF1_val,format.mintick) : EMA4_TF1LabelText, color=EMA4_TF1Colour, style=label.style_label_left, textcolor=EMA4_TF1LabelTextColour, size=txt_size, textalign=EMA4_TF1LabelAlign)
+            EMA4_TF1Label := label.new(bar_index + EMA4_TF1Offset, EMA4_TF1_val, text=EMA4_TF1LabelPriceBool ? str.tostring(EMA4_TF1) + ' '+EMA4_TF1LabelText + ' '+ str.tostring(EMA4_TF1_val,format.mintick) : EMA4_TF1LabelText, color=EMA4_TF1Colour, style=label.style_none, textcolor=EMA4_TF1Colour, size=txt_size, textalign=EMA4_TF1LabelAlign)
 
         if EMA1_TF2Level
             EMA1_TF2Line := line.new(bar_index_open, EMA1_TF2_val, bar_index+10, EMA1_TF2_val, color=EMA1_TF2Colour, style=EMA1_TF2LineStyle, width=EMA1_TF2LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA1_TF2LabelBool
-            EMA1_TF2Label := label.new(bar_index + EMA1_TF2Offset, EMA1_TF2_val, text=EMA1_TF2LabelPriceBool ? str.tostring(EMA1_TF2) + ' '+EMA1_TF2LabelText + ' '+ str.tostring(EMA1_TF2_val,format.mintick) : EMA1_TF2LabelText, color=EMA1_TF2Colour, style=label.style_label_left, textcolor=EMA1_TF2LabelTextColour, size=txt_size, textalign=EMA1_TF2LabelAlign)
+            EMA1_TF2Label := label.new(bar_index + EMA1_TF2Offset, EMA1_TF2_val, text=EMA1_TF2LabelPriceBool ? str.tostring(EMA1_TF2) + ' '+EMA1_TF2LabelText + ' '+ str.tostring(EMA1_TF2_val,format.mintick) : EMA1_TF2LabelText, color=EMA1_TF2Colour, style=label.style_none, textcolor=EMA1_TF2Colour, size=txt_size, textalign=EMA1_TF2LabelAlign)
         if EMA2_TF2Level
             EMA2_TF2Line := line.new(bar_index_open, EMA2_TF2_val, bar_index+10, EMA2_TF2_val, color=EMA2_TF2Colour, style=EMA2_TF2LineStyle, width=EMA2_TF2LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA2_TF2LabelBool
-            EMA2_TF2Label := label.new(bar_index + EMA2_TF2Offset, EMA2_TF2_val, text=EMA2_TF2LabelPriceBool ? str.tostring(EMA2_TF2) + ' '+EMA2_TF2LabelText + ' '+ str.tostring(EMA2_TF2_val,format.mintick) : EMA2_TF2LabelText, color=EMA2_TF2Colour, style=label.style_label_left, textcolor=EMA2_TF2LabelTextColour, size=txt_size, textalign=EMA2_TF2LabelAlign)
+            EMA2_TF2Label := label.new(bar_index + EMA2_TF2Offset, EMA2_TF2_val, text=EMA2_TF2LabelPriceBool ? str.tostring(EMA2_TF2) + ' '+EMA2_TF2LabelText + ' '+ str.tostring(EMA2_TF2_val,format.mintick) : EMA2_TF2LabelText, color=EMA2_TF2Colour, style=label.style_none, textcolor=EMA2_TF2Colour, size=txt_size, textalign=EMA2_TF2LabelAlign)
         if EMA3_TF2Level
             EMA3_TF2Line := line.new(bar_index_open, EMA3_TF2_val, bar_index+10, EMA3_TF2_val, color=EMA3_TF2Colour, style=EMA3_TF2LineStyle, width=EMA3_TF2LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA3_TF2LabelBool
-            EMA3_TF2Label := label.new(bar_index + EMA3_TF2Offset, EMA3_TF2_val, text=EMA3_TF2LabelPriceBool ? str.tostring(EMA3_TF2) + ' '+EMA3_TF2LabelText + ' '+ str.tostring(EMA3_TF2_val,format.mintick) : EMA3_TF2LabelText, color=EMA3_TF2Colour, style=label.style_label_left, textcolor=EMA3_TF2LabelTextColour,size=txt_size, textalign=EMA3_TF2LabelAlign)
+            EMA3_TF2Label := label.new(bar_index + EMA3_TF2Offset, EMA3_TF2_val, text=EMA3_TF2LabelPriceBool ? str.tostring(EMA3_TF2) + ' '+EMA3_TF2LabelText + ' '+ str.tostring(EMA3_TF2_val,format.mintick) : EMA3_TF2LabelText, color=EMA3_TF2Colour, style=label.style_none, textcolor=EMA3_TF2Colour,size=txt_size, textalign=EMA3_TF2LabelAlign)
         if EMA4_TF2Level
             EMA4_TF2Line := line.new(bar_index_open, EMA4_TF2_val, bar_index+10, EMA4_TF2_val, color=EMA4_TF2Colour, style=EMA4_TF2LineStyle, width=EMA4_TF2LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA4_TF2LabelBool
-            EMA4_TF2Label := label.new(bar_index + EMA4_TF2Offset, EMA4_TF2_val, text=EMA4_TF2LabelPriceBool ? str.tostring(EMA4_TF2) + ' '+EMA4_TF2LabelText + ' '+ str.tostring(EMA4_TF2_val,format.mintick) : EMA4_TF2LabelText, color=EMA4_TF2Colour, style=label.style_label_left, textcolor=EMA4_TF2LabelTextColour, size=txt_size, textalign=EMA4_TF2LabelAlign)
+            EMA4_TF2Label := label.new(bar_index + EMA4_TF2Offset, EMA4_TF2_val, text=EMA4_TF2LabelPriceBool ? str.tostring(EMA4_TF2) + ' '+EMA4_TF2LabelText + ' '+ str.tostring(EMA4_TF2_val,format.mintick) : EMA4_TF2LabelText, color=EMA4_TF2Colour, style=label.style_none, textcolor=EMA4_TF2Colour, size=txt_size, textalign=EMA4_TF2LabelAlign)
 
         if EMA1_TF3Level
             EMA1_TF3Line := line.new(bar_index_open, EMA1_TF3_val, bar_index+10, EMA1_TF3_val, color=EMA1_TF3Colour, style=EMA1_TF3LineStyle, width=EMA1_TF3LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA1_TF3LabelBool
-            EMA1_TF3Label := label.new(bar_index + EMA1_TF3Offset, EMA1_TF3_val, text=EMA1_TF3LabelPriceBool ? str.tostring(EMA1_TF3) + ' '+EMA1_TF3LabelText + ' '+ str.tostring(EMA1_TF3_val,format.mintick) : EMA1_TF3LabelText, color=EMA1_TF3Colour, style=label.style_label_left, textcolor=EMA1_TF3LabelTextColour, size=txt_size, textalign=EMA1_TF3LabelAlign)
+            EMA1_TF3Label := label.new(bar_index + EMA1_TF3Offset, EMA1_TF3_val, text=EMA1_TF3LabelPriceBool ? str.tostring(EMA1_TF3) + ' '+EMA1_TF3LabelText + ' '+ str.tostring(EMA1_TF3_val,format.mintick) : EMA1_TF3LabelText, color=EMA1_TF3Colour, style=label.style_none, textcolor=EMA1_TF3Colour, size=txt_size, textalign=EMA1_TF3LabelAlign)
         if EMA2_TF3Level
             EMA2_TF3Line := line.new(bar_index_open, EMA2_TF3_val, bar_index+10, EMA2_TF3_val, color=EMA2_TF3Colour, style=EMA2_TF3LineStyle, width=EMA2_TF3LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA2_TF3LabelBool
-            EMA2_TF3Label := label.new(bar_index + EMA2_TF3Offset, EMA2_TF3_val, text=EMA2_TF3LabelPriceBool ? str.tostring(EMA2_TF3) + ' '+EMA2_TF3LabelText + ' '+ str.tostring(EMA2_TF3_val,format.mintick) : EMA2_TF3LabelText, color=EMA2_TF3Colour, style=label.style_label_left, textcolor=EMA2_TF3LabelTextColour, size=txt_size, textalign=EMA2_TF3LabelAlign)
+            EMA2_TF3Label := label.new(bar_index + EMA2_TF3Offset, EMA2_TF3_val, text=EMA2_TF3LabelPriceBool ? str.tostring(EMA2_TF3) + ' '+EMA2_TF3LabelText + ' '+ str.tostring(EMA2_TF3_val,format.mintick) : EMA2_TF3LabelText, color=EMA2_TF3Colour, style=label.style_none, textcolor=EMA2_TF3Colour, size=txt_size, textalign=EMA2_TF3LabelAlign)
         if EMA3_TF3Level
             EMA3_TF3Line := line.new(bar_index_open, EMA3_TF3_val, bar_index+10, EMA3_TF3_val, color=EMA3_TF3Colour, style=EMA3_TF3LineStyle, width=EMA3_TF3LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA3_TF3LabelBool
-            EMA3_TF3Label := label.new(bar_index + EMA3_TF3Offset, EMA3_TF3_val, text=EMA3_TF3LabelPriceBool ? str.tostring(EMA3_TF3) + ' '+EMA3_TF3LabelText + ' '+ str.tostring(EMA3_TF3_val,format.mintick) : EMA3_TF3LabelText, color=EMA3_TF3Colour, style=label.style_label_left, textcolor=EMA3_TF3LabelTextColour, size=txt_size, textalign=EMA3_TF3LabelAlign)
+            EMA3_TF3Label := label.new(bar_index + EMA3_TF3Offset, EMA3_TF3_val, text=EMA3_TF3LabelPriceBool ? str.tostring(EMA3_TF3) + ' '+EMA3_TF3LabelText + ' '+ str.tostring(EMA3_TF3_val,format.mintick) : EMA3_TF3LabelText, color=EMA3_TF3Colour, style=label.style_none, textcolor=EMA3_TF3Colour, size=txt_size, textalign=EMA3_TF3LabelAlign)
         if EMA4_TF3Level
             EMA4_TF3Line := line.new(bar_index_open, EMA4_TF3_val, bar_index+10, EMA4_TF3_val, color=EMA4_TF3Colour, style=EMA4_TF3LineStyle, width=EMA4_TF3LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA4_TF3LabelBool
-            EMA4_TF3Label := label.new(bar_index + EMA4_TF3Offset, EMA4_TF3_val, text=EMA4_TF3LabelPriceBool ? str.tostring(EMA4_TF3) + ' '+EMA4_TF3LabelText + ' '+ str.tostring(EMA4_TF3_val,format.mintick) : EMA4_TF3LabelText, color=EMA4_TF3Colour, style=label.style_label_left, textcolor=EMA4_TF3LabelTextColour, size=txt_size, textalign=EMA4_TF3LabelAlign)
+            EMA4_TF3Label := label.new(bar_index + EMA4_TF3Offset, EMA4_TF3_val, text=EMA4_TF3LabelPriceBool ? str.tostring(EMA4_TF3) + ' '+EMA4_TF3LabelText + ' '+ str.tostring(EMA4_TF3_val,format.mintick) : EMA4_TF3LabelText, color=EMA4_TF3Colour, style=label.style_none, textcolor=EMA4_TF3Colour, size=txt_size, textalign=EMA4_TF3LabelAlign)
 
         if EMA1_TF4Level
             EMA1_TF4Line := line.new(bar_index_open, EMA1_TF4_val, bar_index+10, EMA1_TF4_val, color=EMA1_TF4Colour, style=EMA1_TF4LineStyle, width=EMA1_TF4LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA1_TF4LabelBool
-            EMA1_TF4Label := label.new(bar_index + EMA1_TF4Offset, EMA1_TF4_val, text=EMA1_TF4LabelPriceBool ? str.tostring(EMA1_TF4) + ' '+EMA1_TF4LabelText + ' '+ str.tostring(EMA1_TF4_val,format.mintick) : EMA1_TF4LabelText, color=EMA1_TF4Colour, style=label.style_label_left, textcolor=EMA1_TF4LabelTextColour, size=txt_size, textalign=EMA1_TF4LabelAlign)
+            EMA1_TF4Label := label.new(bar_index + EMA1_TF4Offset, EMA1_TF4_val, text=EMA1_TF4LabelPriceBool ? str.tostring(EMA1_TF4) + ' '+EMA1_TF4LabelText + ' '+ str.tostring(EMA1_TF4_val,format.mintick) : EMA1_TF4LabelText, color=EMA1_TF4Colour, style=label.style_none, textcolor=EMA1_TF4Colour, size=txt_size, textalign=EMA1_TF4LabelAlign)
         if EMA2_TF4Level
             EMA2_TF4Line := line.new(bar_index_open, EMA2_TF4_val, bar_index+10, EMA2_TF4_val, color=EMA2_TF4Colour, style=EMA2_TF4LineStyle, width=EMA2_TF4LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA2_TF4LabelBool
-            EMA2_TF4Label := label.new(bar_index + EMA2_TF4Offset, EMA2_TF4_val, text=EMA2_TF4LabelPriceBool ? str.tostring(EMA2_TF4) + ' '+EMA2_TF4LabelText + ' '+ str.tostring(EMA2_TF4_val,format.mintick) : EMA2_TF4LabelText, color=EMA2_TF4Colour, style=label.style_label_left, textcolor=EMA2_TF4LabelTextColour, size=txt_size, textalign=EMA2_TF4LabelAlign)
+            EMA2_TF4Label := label.new(bar_index + EMA2_TF4Offset, EMA2_TF4_val, text=EMA2_TF4LabelPriceBool ? str.tostring(EMA2_TF4) + ' '+EMA2_TF4LabelText + ' '+ str.tostring(EMA2_TF4_val,format.mintick) : EMA2_TF4LabelText, color=EMA2_TF4Colour, style=label.style_none, textcolor=EMA2_TF4Colour, size=txt_size, textalign=EMA2_TF4LabelAlign)
         if EMA3_TF4Level
             EMA3_TF4Line := line.new(bar_index_open, EMA3_TF4_val, bar_index+10, EMA3_TF4_val, color=EMA3_TF4Colour, style=EMA3_TF4LineStyle, width=EMA3_TF4LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA3_TF4LabelBool
-            EMA3_TF4Label := label.new(bar_index + EMA3_TF4Offset, EMA3_TF4_val, text=EMA3_TF4LabelPriceBool ? str.tostring(EMA3_TF4) + ' '+EMA3_TF4LabelText + ' '+ str.tostring(EMA3_TF4_val,format.mintick) : EMA3_TF4LabelText, color=EMA3_TF4Colour, style=label.style_label_left, textcolor=EMA3_TF4LabelTextColour, size=txt_size, textalign=EMA3_TF4LabelAlign)
+            EMA3_TF4Label := label.new(bar_index + EMA3_TF4Offset, EMA3_TF4_val, text=EMA3_TF4LabelPriceBool ? str.tostring(EMA3_TF4) + ' '+EMA3_TF4LabelText + ' '+ str.tostring(EMA3_TF4_val,format.mintick) : EMA3_TF4LabelText, color=EMA3_TF4Colour, style=label.style_none, textcolor=EMA3_TF4Colour, size=txt_size, textalign=EMA3_TF4LabelAlign)
         if EMA4_TF4Level
             EMA4_TF4Line := line.new(bar_index_open, EMA4_TF4_val, bar_index+10, EMA4_TF4_val, color=EMA4_TF4Colour, style=EMA4_TF4LineStyle, width=EMA4_TF4LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
         if EMA4_TF4LabelBool
-            EMA4_TF4Label := label.new(bar_index + EMA4_TF4Offset, EMA4_TF4_val, text=EMA4_TF4LabelPriceBool ? str.tostring(EMA4_TF4) + ' '+EMA4_TF4LabelText + ' '+ str.tostring(EMA4_TF4_val,format.mintick) : EMA4_TF4LabelText, color=EMA4_TF4Colour, style=label.style_label_left, textcolor=EMA4_TF4LabelTextColour, size=txt_size, textalign=EMA4_TF4LabelAlign)
+            EMA4_TF4Label := label.new(bar_index + EMA4_TF4Offset, EMA4_TF4_val, text=EMA4_TF4LabelPriceBool ? str.tostring(EMA4_TF4) + ' '+EMA4_TF4LabelText + ' '+ str.tostring(EMA4_TF4_val,format.mintick) : EMA4_TF4LabelText, color=EMA4_TF4Colour, style=label.style_none, textcolor=EMA4_TF4Colour, size=txt_size, textalign=EMA4_TF4LabelAlign)
 
         if showKeyLevels
             YHOD_Line := line.new(x1=YHOD_bar, y1=YHOD_val, x2=bar_index+10, y2=YHOD_val, color=YHOD_Colour, style=YHOD_LineStyle, width=YHOD_LineWidth, extend=extend.none)
-            YHOD_Label := label.new(bar_index + KL_LabelOffset, YHOD_val, text='YHOD ' + str.tostring(YHOD_val, format.mintick), color=YHOD_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
+            YHOD_Label := label.new(bar_index + KL_LabelOffset, YHOD_val, text='YHOD ' + str.tostring(YHOD_val, format.mintick), color=YHOD_Colour, style=label.style_none, textcolor=YHOD_Colour, size=txt_size)
 
             YLOD_Line := line.new(x1=YLOD_bar, y1=YLOD_val, x2=bar_index+10, y2=YLOD_val, color=YLOD_Colour, style=YLOD_LineStyle, width=YLOD_LineWidth, extend=extend.none)
-            YLOD_Label := label.new(bar_index + KL_LabelOffset, YLOD_val, text='YLOD ' + str.tostring(YLOD_val, format.mintick), color=YLOD_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
+            YLOD_Label := label.new(bar_index + KL_LabelOffset, YLOD_val, text='YLOD ' + str.tostring(YLOD_val, format.mintick), color=YLOD_Colour, style=label.style_none, textcolor=YLOD_Colour, size=txt_size)
 
             PMH_Line := line.new(x1=PMH_bar, y1=PMH_val, x2=bar_index+10, y2=PMH_val, color=PMH_Colour, style=PMH_LineStyle, width=PMH_LineWidth, extend=extend.none)
-            PMH_Label := label.new(bar_index + KL_LabelOffset, PMH_val, text='PMH ' + str.tostring(PMH_val, format.mintick), color=PMH_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
+            PMH_Label := label.new(bar_index + KL_LabelOffset, PMH_val, text='PMH ' + str.tostring(PMH_val, format.mintick), color=PMH_Colour, style=label.style_none, textcolor=PMH_Colour, size=txt_size)
 
             PML_Line := line.new(x1=PML_bar, y1=PML_val, x2=bar_index+10, y2=PML_val, color=PML_Colour, style=PML_LineStyle, width=PML_LineWidth, extend=extend.none)
-            PML_Label := label.new(bar_index + KL_LabelOffset, PML_val, text='PML ' + str.tostring(PML_val, format.mintick), color=PML_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
+            PML_Label := label.new(bar_index + KL_LabelOffset, PML_val, text='PML ' + str.tostring(PML_val, format.mintick), color=PML_Colour, style=label.style_none, textcolor=PML_Colour, size=txt_size)
 
             TDH_Line := line.new(x1=TDH_bar, y1=TDH_val, x2=bar_index+10, y2=TDH_val, color=TDH_Colour, style=TDH_LineStyle, width=TDH_LineWidth, extend=extend.none)
-            TDH_Label := label.new(bar_index + KL_LabelOffset, TDH_val, text='TDH ' + str.tostring(TDH_val, format.mintick), color=TDH_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
+            TDH_Label := label.new(bar_index + KL_LabelOffset, TDH_val, text='TDH ' + str.tostring(TDH_val, format.mintick), color=TDH_Colour, style=label.style_none, textcolor=TDH_Colour, size=txt_size)
 
             TDL_Line := line.new(x1=TDL_bar, y1=TDL_val, x2=bar_index+10, y2=TDL_val, color=TDL_Colour, style=TDL_LineStyle, width=TDL_LineWidth, extend=extend.none)
-            TDL_Label := label.new(bar_index + KL_LabelOffset, TDL_val, text='TDL ' + str.tostring(TDL_val, format.mintick), color=TDL_Colour, style=label.style_label_left, textcolor=KL_LabelTextColour, size=txt_size)
+            TDL_Label := label.new(bar_index + KL_LabelOffset, TDL_val, text='TDL ' + str.tostring(TDL_val, format.mintick), color=TDL_Colour, style=label.style_none, textcolor=TDL_Colour, size=txt_size)
 
 
     // set location of label for x axis (time axis)
