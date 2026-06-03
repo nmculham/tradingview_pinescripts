@@ -30,6 +30,19 @@ A Pine Script v6 indicator for TradingView that plots EMA levels from multiple t
 | 4hr | 5 | 12 | 34 | 50 |
 | 1D | 5 | 12 | 34 | 50 |
 
+## Key Levels
+
+| Level | Full name | Description |
+|---|---|---|
+| YHOD | Yesterday's High of Day | The highest price reached during yesterday's regular session |
+| YLOD | Yesterday's Low of Day | The lowest price reached during yesterday's regular session |
+| PMH | Pre-Market High | The highest price of the overnight period — from yesterday's regular session close through today's pre-market |
+| PML | Pre-Market Low | The lowest price of the overnight period — from yesterday's regular session close through today's pre-market |
+| TDH | Today's High of Day | The highest price reached so far during today's regular session |
+| TDL | Today's Low of Day | The lowest price reached so far during today's regular session |
+
+Each line is anchored to the specific candle where the level was set, not to the start of the session. PMH/PML freeze at the regular session open and do not update during the trading day.
+
 ## Usage
 
 1. Open TradingView Pine Script editor
