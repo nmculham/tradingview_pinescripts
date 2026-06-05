@@ -1,0 +1,743 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Mereep01
+
+
+// Indicator that will show a horizontal line on where each EMA are on different time frame, which will remove the effort of having to flick through different time frame.
+// the price gap between each of the lines are known as "air gaps", which are essentially zones price can move with less resistance.
+// Therefore bigger the airgap more reward can be expected on trades made. 
+
+
+//@version=6
+indicator('Air Gap MTF — EMA Levels', overlay=true)
+
+// Custom data type to hold all info for one EMA row
+// Updated custom data type to hold the user-defined name
+type EmaInfo
+    string name
+    float value
+    color rowColor
+
+// define variables that sets EMA values for each of the timeframe. Each timeframe has 4 EMA values to set, which can be changed in the settings.
+src = input(title="Source", defval=hl2, group='EMA settings')
+// Let user choose a timeframe from a dropdown list
+EMA_TF1_tf = input.timeframe("30", title="Timeframe 1 (TF1)", group='EMA settings')
+EMA1_TF1 = input.int(title="TF1 EMA 1",defval=5, group='EMA settings')
+EMA2_TF1 = input.int(title="TF1 EMA 2", defval=12, group='EMA settings')
+EMA3_TF1 = input.int(title="TF1 EMA 3", defval=34, group='EMA settings')
+EMA4_TF1 = input.int(title="TF1 EMA 4", defval=50, group='EMA settings')
+EMA_TF2_tf = input.timeframe("60", title="Timeframe 2 (TF2)", group='EMA settings')
+EMA1_TF2 = input.int(title="TF2 EMA 1",defval=5, group='EMA settings')
+EMA2_TF2 = input.int(title="TF2 EMA 2", defval=12, group='EMA settings')
+EMA3_TF2 = input.int(title="TF2 EMA 3", defval=34, group='EMA settings')
+EMA4_TF2 = input.int(title="TF2 EMA 4", defval=50, group='EMA settings')
+EMA_TF3_tf = input.timeframe("240", title="Timeframe 3 (TF3)", group='EMA settings')
+EMA1_TF3 = input.int(title="TF3 EMA 1",defval=5, group='EMA settings')
+EMA2_TF3 = input.int(title="TF3 EMA 2", defval=12, group='EMA settings')
+EMA3_TF3 = input.int(title="TF3 EMA 3", defval=34, group='EMA settings')
+EMA4_TF3 = input.int(title="TF3 EMA 4", defval=50, group='EMA settings')
+EMA_TF4_tf = input.timeframe("1D", title="Timeframe 4 (TF4)", group='EMA settings')
+EMA1_TF4 = input.int(title="TF4 EMA 1",defval=5, group='EMA settings')
+EMA2_TF4 = input.int(title="TF4 EMA 2", defval=12, group='EMA settings')
+EMA3_TF4 = input.int(title="TF4 EMA 3", defval=34, group='EMA settings')
+EMA4_TF4 = input.int(title="TF4 EMA 4", defval=50, group='EMA settings')
+
+// set options on where to draw the lines. This can be chosen in the settings by the user.
+levelSettingOption = input.string('Draw from Day Start', title='Display', options=['Draw from Day Start', 'Draw from specified offset', 'Draw across the chart'], group='Price level')
+levelSetting = levelSettingOption == 'Draw from Day Start' ? 'a' : levelSettingOption == 'Draw across the chart' ? 'c' : 'b'
+EMA_LineOffset = input.int(defval = -25, title='Line start point offset from last bar', group='Price level')
+
+//Variables to set where the lines will be drawn, based on the price level
+// Add this line with your other inputs under the 'Price level' group
+showDrawings = input.bool(true, title="Show Lines & Labels", group="Price level")
+EMA1_TF1Level = input.bool(true, title='TF1 EMA 1', group='Price level', inline='EMA1_TF1')
+EMA2_TF1Level= input.bool(true, title='TF1 EMA 2', group='Price level', inline='EMA2_TF1')
+EMA3_TF1Level= input.bool(true, title='TF1 EMA 3', group='Price level', inline='EMA3_TF1')
+EMA4_TF1Level = input.bool(true, title='TF1 EMA 4', group='Price level', inline='EMA4_TF1')
+EMA1_TF2Level = input.bool(true, title='TF2 EMA 1', group='Price level', inline='EMA1_TF2')
+EMA2_TF2Level= input.bool(true, title='TF2 EMA 2', group='Price level', inline='EMA2_TF2')
+EMA3_TF2Level= input.bool(true, title='TF2 EMA 3', group='Price level', inline='EMA3_TF2')
+EMA4_TF2Level = input.bool(true, title='TF2 EMA 4', group='Price level', inline='EMA4_TF2')
+EMA1_TF3Level = input.bool(true, title='TF3 EMA 1', group='Price level', inline='EMA1_TF3')
+EMA2_TF3Level= input.bool(true, title='TF3 EMA 2', group='Price level', inline='EMA2_TF3')
+EMA3_TF3Level= input.bool(true, title='TF3 EMA 3', group='Price level', inline='EMA3_TF3')
+EMA4_TF3Level = input.bool(true, title='TF3 EMA 4', group='Price level', inline='EMA4_TF3')
+EMA1_TF4Level = input.bool(true, title='TF4 EMA 1', group='Price level', inline='EMA1_TF4')
+EMA2_TF4Level= input.bool(true, title='TF4 EMA 2', group='Price level', inline='EMA2_TF4')
+EMA3_TF4Level= input.bool(true, title='TF4 EMA 3', group='Price level', inline='EMA3_TF4')
+EMA4_TF4Level = input.bool(true, title='TF4 EMA 4', group='Price level', inline='EMA4_TF4')
+
+
+// text size options for the labels which can be changed in the settings by the user.
+txt_sizeopt = input.string(title="Text Size", defval="normal", inline = "10", options = ["auto", "tiny", "small", "normal", "large", "huge"], group ='Label')
+txt_size = (txt_sizeopt == "auto") ? size.auto : (txt_sizeopt == "tiny") ? size.tiny : (txt_sizeopt == "small") ? size.small : (txt_sizeopt == "normal") ? size.normal : (txt_sizeopt == "large") ? size.large : size.huge
+
+// variables to store the price value for plotting the data on the chart
+EMA1_TF1LabelBool = input.bool(true, title='TF1 EMA 1', group='Label', inline='EMA1_TF1')
+EMA2_TF1LabelBool= input.bool(true, title='TF1 EMA 2', group='Label', inline='EMA2_TF1')
+EMA3_TF1LabelBool= input.bool(true, title='TF1 EMA 3', group='Label', inline='EMA3_TF1')
+EMA4_TF1LabelBool = input.bool(true, title='TF1 EMA 4', group='Label', inline='EMA4_TF1')
+EMA1_TF2LabelBool = input.bool(true, title='TF2 EMA 1', group='Label', inline='EMA1_TF2')
+EMA2_TF2LabelBool= input.bool(true, title='TF2 EMA 2', group='Label', inline='EMA2_TF2')
+EMA3_TF2LabelBool= input.bool(true, title='TF2 EMA 3', group='Label', inline='EMA3_TF2')
+EMA4_TF2LabelBool = input.bool(true, title='TF2 EMA 4', group='Label', inline='EMA4_TF2')
+EMA1_TF3LabelBool = input.bool(true, title='TF3 EMA 1', group='Label', inline='EMA1_TF3')
+EMA2_TF3LabelBool= input.bool(true, title='TF3 EMA 2', group='Label', inline='EMA2_TF3')
+EMA3_TF3LabelBool= input.bool(true, title='TF3 EMA 3', group='Label', inline='EMA3_TF3')
+EMA4_TF3LabelBool = input.bool(true, title='TF3 EMA 4', group='Label', inline='EMA4_TF3')
+EMA1_TF4LabelBool = input.bool(true, title='TF4 EMA 1', group='Label', inline='EMA1_TF4')
+EMA2_TF4LabelBool= input.bool(true, title='TF4 EMA 2', group='Label', inline='EMA2_TF4')
+EMA3_TF4LabelBool= input.bool(true, title='TF4 EMA 3', group='Label', inline='EMA3_TF4')
+EMA4_TF4LabelBool = input.bool(true, title='TF4 EMA 4', group='Label', inline='EMA4_TF4')
+
+// variables used to store the price number that gets used on the label when it is drawn on the chart
+EMA1_TF1LabelPriceBool = input.bool(true, title='Display price after label text', group='Label', inline='EMA1_TF1')
+EMA2_TF1LabelPriceBool= input.bool(true, title='Display price after label text', group='Label', inline='EMA2_TF1')
+EMA3_TF1LabelPriceBool= input.bool(true, title='Display price after label text', group='Label', inline='EMA3_TF1')
+EMA4_TF1LabelPriceBool = input.bool(true, title='Display price after label text', group='Label', inline='EMA4_TF1')
+EMA1_TF2LabelPriceBool = input.bool(true, title='Display price after label text', group='Label', inline='EMA1_TF2')
+EMA2_TF2LabelPriceBool= input.bool(true, title='Display price after label text', group='Label', inline='EMA2_TF2')
+EMA3_TF2LabelPriceBool= input.bool(true, title='Display price after label text', group='Label', inline='EMA3_TF2')
+EMA4_TF2LabelPriceBool = input.bool(true, title='Display price after label text', group='Label', inline='EMA4_TF2')
+EMA1_TF3LabelPriceBool = input.bool(true, title='Display price after label text', group='Label', inline='EMA1_TF3')
+EMA2_TF3LabelPriceBool= input.bool(true, title='Display price after label text', group='Label', inline='EMA2_TF3')
+EMA3_TF3LabelPriceBool= input.bool(true, title='Display price after label text', group='Label', inline='EMA3_TF3')
+EMA4_TF3LabelPriceBool = input.bool(true, title='Display price after label text', group='Label', inline='EMA4_TF3')
+EMA1_TF4LabelPriceBool = input.bool(true, title='Display price after label text', group='Label', inline='EMA1_TF4')
+EMA2_TF4LabelPriceBool= input.bool(true, title='Display price after label text', group='Label', inline='EMA2_TF4')
+EMA3_TF4LabelPriceBool= input.bool(true, title='Display price after label text', group='Label', inline='EMA3_TF4')
+EMA4_TF4LabelPriceBool = input.bool(true, title='Display price after label text', group='Label', inline='EMA4_TF4')
+
+// variables that handles the offset of where the label will be set on the chart
+EMA1_TF1Offset = input.int(7, title='TF1 EMA 1 label offset from last bar', group='Label')
+EMA2_TF1Offset = input.int(7, title='TF1 EMA 2 label offset from last bar', group='Label')
+EMA3_TF1Offset = input.int(7, title='TF1 EMA 3 label offset from last bar', group='Label')
+EMA4_TF1Offset = input.int(7, title='TF1 EMA 4 label offset from last bar', group='Label')
+EMA1_TF2Offset = input.int(7, title='TF2 EMA 1 label offset from last bar', group='Label')
+EMA2_TF2Offset = input.int(7, title='TF2 EMA 2 label offset from last bar', group='Label')
+EMA3_TF2Offset = input.int(7, title='TF2 EMA 3 label offset from last bar', group='Label')
+EMA4_TF2Offset = input.int(7, title='TF2 EMA 4 label offset from last bar', group='Label')
+EMA1_TF3Offset = input.int(7, title='TF3 EMA 1 label offset from last bar', group='Label')
+EMA2_TF3Offset = input.int(7, title='TF3 EMA 2 label offset from last bar', group='Label')
+EMA3_TF3Offset = input.int(7, title='TF3 EMA 3 label offset from last bar', group='Label')
+EMA4_TF3Offset = input.int(7, title='TF3 EMA 4 label offset from last bar', group='Label')
+EMA1_TF4Offset = input.int(7, title='TF4 EMA 1 label offset from last bar', group='Label')
+EMA2_TF4Offset = input.int(7, title='TF4 EMA 2 label offset from last bar', group='Label')
+EMA3_TF4Offset = input.int(7, title='TF4 EMA 3 label offset from last bar', group='Label')
+EMA4_TF4Offset = input.int(7, title='TF4 EMA 4 label offset from last bar', group='Label')
+
+// variables that handles the display in settings for allignment option for labels
+EMA1_TF1LabelAlignOption = input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA1_TF1')
+EMA2_TF1LabelAlignOption= input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA2_TF1')
+EMA3_TF1LabelAlignOption= input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA3_TF1')
+EMA4_TF1LabelAlignOption = input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA4_TF1')
+EMA1_TF2LabelAlignOption = input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA1_TF2')
+EMA2_TF2LabelAlignOption= input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA2_TF2')
+EMA3_TF2LabelAlignOption= input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA3_TF2')
+EMA4_TF2LabelAlignOption = input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA4_TF2')
+EMA1_TF3LabelAlignOption = input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA1_TF3')
+EMA2_TF3LabelAlignOption= input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA2_TF3')
+EMA3_TF3LabelAlignOption= input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA3_TF3')
+EMA4_TF3LabelAlignOption = input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA4_TF3')
+EMA1_TF4LabelAlignOption = input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA1_TF4')
+EMA2_TF4LabelAlignOption= input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA2_TF4')
+EMA3_TF4LabelAlignOption= input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA3_TF4')
+EMA4_TF4LabelAlignOption = input.string('align left', title='', options=['align left', 'align center', 'align right'], group='Label', inline='EMA4_TF4')
+
+// variables that handles option on allignment of text in label once chosen in the settings menu
+EMA1_TF1LabelAlign = EMA1_TF1LabelAlignOption == 'align left' ? text.align_left : EMA1_TF1LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA2_TF1LabelAlign = EMA2_TF1LabelAlignOption == 'align left' ? text.align_left : EMA2_TF1LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA3_TF1LabelAlign = EMA3_TF1LabelAlignOption == 'align left' ? text.align_left : EMA3_TF1LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA4_TF1LabelAlign = EMA4_TF1LabelAlignOption == 'align left' ? text.align_left : EMA4_TF1LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA1_TF2LabelAlign = EMA1_TF2LabelAlignOption == 'align left' ? text.align_left : EMA1_TF2LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA2_TF2LabelAlign = EMA2_TF2LabelAlignOption == 'align left' ? text.align_left : EMA2_TF2LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA3_TF2LabelAlign = EMA3_TF2LabelAlignOption == 'align left' ? text.align_left : EMA3_TF2LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA4_TF2LabelAlign = EMA4_TF2LabelAlignOption == 'align left' ? text.align_left : EMA4_TF2LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA1_TF3LabelAlign = EMA1_TF3LabelAlignOption == 'align left' ? text.align_left : EMA1_TF3LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA2_TF3LabelAlign = EMA2_TF3LabelAlignOption == 'align left' ? text.align_left : EMA2_TF3LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA3_TF3LabelAlign = EMA3_TF3LabelAlignOption == 'align left' ? text.align_left : EMA3_TF3LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA4_TF3LabelAlign = EMA4_TF3LabelAlignOption == 'align left' ? text.align_left : EMA4_TF3LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA1_TF4LabelAlign = EMA1_TF4LabelAlignOption == 'align left' ? text.align_left : EMA1_TF4LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA2_TF4LabelAlign = EMA2_TF4LabelAlignOption == 'align left' ? text.align_left : EMA2_TF4LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA3_TF4LabelAlign = EMA3_TF4LabelAlignOption == 'align left' ? text.align_left : EMA3_TF4LabelAlignOption == 'align center' ? text.align_center : text.align_right
+EMA4_TF4LabelAlign = EMA4_TF4LabelAlignOption == 'align left' ? text.align_left : EMA4_TF4LabelAlignOption == 'align center' ? text.align_center : text.align_right
+
+// variables that handles the EMA labels on chart
+EMA1_TF1LabelText = input.string('EMA 30min ', title='Text',group='Label', inline='EMA1_TF1')
+EMA2_TF1LabelText= input.string('EMA 30min ', title='Text',group='Label', inline='EMA2_TF1')
+EMA3_TF1LabelText= input.string('EMA 30min ', title='Text',group='Label', inline='EMA3_TF1')
+EMA4_TF1LabelText = input.string('EMA 30min ', title='Text',group='Label', inline='EMA4_TF1')
+EMA1_TF2LabelText = input.string('EMA 1hr ', title='Text',group='Label', inline='EMA1_TF2')
+EMA2_TF2LabelText= input.string('EMA 1hr ', title='Text',group='Label', inline='EMA2_TF2')
+EMA3_TF2LabelText= input.string('EMA 1hr ', title='Text',group='Label', inline='EMA3_TF2')
+EMA4_TF2LabelText = input.string('EMA 1hr ', title='Text',group='Label', inline='EMA4_TF2')
+EMA1_TF3LabelText = input.string('EMA 4hr ', title='Text',group='Label', inline='EMA1_TF3')
+EMA2_TF3LabelText= input.string('EMA 4hr ', title='Text',group='Label', inline='EMA2_TF3')
+EMA3_TF3LabelText= input.string('EMA 4hr ', title='Text',group='Label', inline='EMA3_TF3')
+EMA4_TF3LabelText = input.string('EMA 4hr ', title='Text',group='Label', inline='EMA4_TF3')
+EMA1_TF4LabelText = input.string('EMA 1D ', title='Text',group='Label', inline='EMA1_TF4')
+EMA2_TF4LabelText= input.string('EMA 1D ', title='Text',group='Label', inline='EMA2_TF4')
+EMA3_TF4LabelText= input.string('EMA 1D ', title='Text',group='Label', inline='EMA3_TF4')
+EMA4_TF4LabelText = input.string('EMA 1D ', title='Text',group='Label', inline='EMA4_TF4')
+
+// variables that handle text colour of labels
+EMA1_TF1LabelTextColour= input(title='', defval=#000000, group='Label', inline='EMA1_TF1')
+EMA2_TF1LabelTextColour = input(title='', defval=#000000, group='Label', inline='EMA2_TF1')
+EMA3_TF1LabelTextColour = input(title='', defval=#000000, group='Label', inline='EMA3_TF1')
+EMA4_TF1LabelTextColour= input(title='', defval=#000000, group='Label', inline='EMA4_TF1')
+EMA1_TF2LabelTextColour= input(title='', defval=#000000, group='Label', inline='EMA1_TF2')
+EMA2_TF2LabelTextColour = input(title='', defval=#000000, group='Label', inline='EMA2_TF2')
+EMA3_TF2LabelTextColour = input(title='', defval=#000000, group='Label', inline='EMA3_TF2')
+EMA4_TF2LabelTextColour= input(title='', defval=#000000, group='Label', inline='EMA4_TF2')
+EMA1_TF3LabelTextColour= input(title='', defval=#000000, group='Label', inline='EMA1_TF3')
+EMA2_TF3LabelTextColour = input(title='', defval=#000000, group='Label', inline='EMA2_TF3')
+EMA3_TF3LabelTextColour = input(title='', defval=#000000, group='Label', inline='EMA3_TF3')
+EMA4_TF3LabelTextColour= input(title='', defval=#000000, group='Label', inline='EMA4_TF3')
+EMA1_TF4LabelTextColour= input(title='', defval=#000000, group='Label', inline='EMA1_TF4')
+EMA2_TF4LabelTextColour = input(title='', defval=#000000, group='Label', inline='EMA2_TF4')
+EMA3_TF4LabelTextColour = input(title='', defval=#000000, group='Label', inline='EMA3_TF4')
+EMA4_TF4LabelTextColour= input(title='', defval=#000000, group='Label', inline='EMA4_TF4')
+
+// define time settings
+secondBool= input.bool(true, title='Seconds', group='Price axis visibility', inline='second')
+minuteBool= input.bool(true, title='Minutes', group='Price axis visibility', inline='minute')
+hourBool= input.bool(true, title='Hours', group='Price axis visibility', inline='hour')
+dayBool = input.bool(false, title='Days', group='Price axis visibility', inline='day')
+weekBool= input.bool(false, title='Weeks', group='Price axis visibility', inline='week')
+monthBool = input.bool(false, title='Months', group='Price axis visibility', inline='month')
+
+secondMin = input.int(1, '', 1, 59, group='Price axis visibility', inline='second')
+secondMax = input.int(59, '-', 1, 59, group='Price axis visibility', inline='second')
+minuteMin = input.int(1, '', 1, 59, group='Price axis visibility', inline='minute')
+minuteMax = input.int(59, '-', 1, 59, group='Price axis visibility', inline='minute')
+hourMin = input.int(1, '', 1, 24, group='Price axis visibility', inline='hour')
+hourMax = input.int(24, '-', 1, 24, group='Price axis visibility', inline='hour')
+dayMin= input.int(1, '', 1, 366, group='Price axis visibility', inline='day')
+dayMax= input.int(366, '-', 1, 366, group='Price axis visibility', inline='day')
+weekMin = input.int(1, '', 1, 52, group='Price axis visibility', inline='week')
+weekMax = input.int(52, '-', 1, 52, group='Price axis visibility', inline='week')
+monthMin= input.int(1, '', 1, 12, group='Price axis visibility', inline='month')
+monthMax= input.int(12, '-', 1, 12, group='Price axis visibility', inline='month')
+
+// NEW -- Inputs for table display
+showTable = input.bool(false, title='Show EMA Table', group='Table Display')
+tablePosition = input.string(position.top_right, 'Table Position', options=[position.top_left, position.top_center, position.top_right, position.middle_left, position.middle_center, position.middle_right, position.bottom_left, position.bottom_center, position.bottom_right], group='Table Display')
+// Add this line with your other Table Display inputs
+tableLayout = input.string("Ordered", "Table Layout", options=["Standard", "Ordered"], group="Table Display")
+// Add these lines with your other inputs
+tableSizeInput = input.string("Normal", "Table Text Size", options=["Auto", "Tiny", "Small", "Normal", "Large", "Huge"], group="Table Display")
+tableTextSize = (tableSizeInput == "Auto") ? size.auto : (tableSizeInput == "Tiny") ? size.tiny : (tableSizeInput == "Small") ? size.small : (tableSizeInput == "Normal") ? size.normal : (tableSizeInput == "Large") ? size.large : size.huge
+// Add these lines with your other Table Display inputs
+headerBgColor = input.color(color.gray, "Header Background Color", group="Table Display")
+headerTextColor = input.color(color.white, "Header Text Color", group="Table Display")
+// Add these lines with your other Table Display inputs
+rowBgColorMode = input.string("Line Colour", "EMA Row Background", options=["Line Colour", "Price Diff."], group="Table Display")
+bgColorAbove = input.color(color.new(#00ff08, 0), "   EMA Background Color (EMA > Price) *IF Price Diff. selected*", group="Table Display")
+bgColorBelow = input.color(color.new(#ff0000, 0), "   EMA Background Color (EMA < Price) *IF Price Diff. selected*", group="Table Display")
+// Add this line with your other Table Display inputs
+emaRowTextColor = input.color(color.black, "Row Text Color", group="Table Display")
+// Add these lines with your other Table Display inputs
+posDiffColor = input.color(color.new(color.green, 10), "Positive Difference Colour", group="Table Display")
+negDiffColor = input.color(color.new(color.red, 10), "Negative Difference Colour", group="Table Display")
+// Add these lines with your other Table Display inputs
+currPriceRowBgColor = input.color(color.new(color.gray, 80), title="Current Price Background Colour", group="Table Display")
+currPriceRowTextColor = input.color(color.white, title="Current Price Text Colour", group="Table Display")
+
+// User-defined names for each EMA in the table
+EMA1_TF1_name = input.string("5 EMA 30min", "TF1 EMA 1 Text: ", group="Table Display", inline="EMA1_TF1")
+EMA2_TF1_name = input.string("12 EMA 30min", "TF1 EMA 2Text: ", group="Table Display", inline="EMA2_TF1")
+EMA3_TF1_name = input.string("34 EMA 30min", "TF1 EMA 3 Text: ", group="Table Display", inline="EMA3_TF1")
+EMA4_TF1_name = input.string("50 EMA 30min", "TF1 EMA 4 Text: ", group="Table Display", inline="EMA4_TF1")
+
+EMA1_TF2_name = input.string("5 EMA 1hr", "TF2 EMA 1 Text: ", group="Table Display", inline="EMA1_TF2")
+EMA2_TF2_name = input.string("12 EMA 1hr", "TF2 EMA 2 Text: ", group="Table Display", inline="EMA2_TF2")
+EMA3_TF2_name = input.string("34 EMA 1hr", "TF2 EMA 3 Text: ", group="Table Display", inline="EMA3_TF2")
+EMA4_TF2_name = input.string("50 EMA 1hr", "TF2 EMA 4 Text: ", group="Table Display", inline="EMA4_TF2")
+
+EMA1_TF3_name = input.string("5 EMA 4hr", "TF3 EMA 1 Text: ", group="Table Display", inline="EMA1_TF3")
+EMA2_TF3_name = input.string("12 EMA 4hr", "TF3 EMA 2 Text: ", group="Table Display", inline="EMA2_TF3")
+EMA3_TF3_name = input.string("34 EMA 4hr", "TF3 EMA 3 Text: ", group="Table Display", inline="EMA3_TF3")
+EMA4_TF3_name = input.string("50 EMA 4hr", "TF3 EMA 4 Text: ", group="Table Display", inline="EMA4_TF3")
+
+EMA1_TF4_name = input.string("5 EMA 1D", "TF4 EMA 1 Text: ", group="Table Display", inline="EMA1_TF4")
+EMA2_TF4_name = input.string("12 EMA 1D", "TF4 EMA 2 Text: ", group="Table Display", inline="EMA2_TF4")
+EMA3_TF4_name = input.string("34 EMA 1D", "TF4 EMA 3 Text: ", group="Table Display", inline="EMA3_TF4")
+EMA4_TF4_name = input.string("50 EMA 1D", "TF4 EMA 4 Text: ", group="Table Display", inline="EMA4_TF4")
+
+
+
+timeframeNumberstr = str.match(timeframe.period, '[0-9]*')
+timeframeNumber = str.tonumber(timeframeNumberstr)
+timeframeLetter = str.match(timeframe.period, '[A-Z]')
+
+bool timeframePlot = false
+
+if secondBool and timeframeLetter=='S' and secondMin<=timeframeNumber and secondMax>=timeframeNumber
+    timeframePlot := true
+if minuteBool and timeframeLetter=='' and minuteMin<=timeframeNumber and minuteMax>=timeframeNumber
+    timeframePlot := true
+if hourBool and timeframeLetter=='' and hourMin*60<=timeframeNumber and hourMax*60>=timeframeNumber
+    timeframePlot := true
+if dayBool and timeframeLetter=='D' and dayMin<=timeframeNumber and dayMax>=timeframeNumber
+    timeframePlot := true
+if weekBool and timeframeLetter=='W' and weekMin<=timeframeNumber and weekMax>=timeframeNumber
+    timeframePlot := true
+if monthBool and timeframeLetter=='M' and monthMin<=timeframeNumber and monthMax>=timeframeNumber
+    timeframePlot := true
+
+// variables that handle line colour 
+EMA1_TF1Colour= input(title='', defval=color.rgb(255, 0, 0), group='Price level', inline='EMA1_TF1')
+EMA2_TF1Colour = input(title='', defval=#ff0000, group='Price level', inline='EMA2_TF1')
+EMA3_TF1Colour = input(title='', defval=#ff0000, group='Price level', inline='EMA3_TF1')
+EMA4_TF1Colour= input(title='', defval=color.rgb(255, 0, 0), group='Price level', inline='EMA4_TF1')
+EMA1_TF2Colour= input(title='', defval=#00ff04, group='Price level', inline='EMA1_TF2')
+EMA2_TF2Colour = input(title='', defval=#00ff04, group='Price level', inline='EMA2_TF2')
+EMA3_TF2Colour = input(title='', defval=#00ff04, group='Price level', inline='EMA3_TF2')
+EMA4_TF2Colour= input(title='', defval=#00ff04, group='Price level', inline='EMA4_TF2')
+EMA1_TF3Colour= input(title='', defval=color.rgb(255, 255, 0), group='Price level', inline='EMA1_TF3')
+EMA2_TF3Colour = input(title='', defval=color.rgb(255, 255, 0), group='Price level', inline='EMA2_TF3')
+EMA3_TF3Colour = input(title='', defval=color.rgb(255, 255, 0), group='Price level', inline='EMA3_TF3')
+EMA4_TF3Colour= input(title='', defval=color.rgb(0255, 255, 0), group='Price level', inline='EMA4_TF3')
+EMA1_TF4Colour= input(title='', defval=color.rgb(0, 255, 255), group='Price level', inline='EMA1_TF4')
+EMA2_TF4Colour = input(title='', defval=color.rgb(0, 255, 255), group='Price level', inline='EMA2_TF4')
+EMA3_TF4Colour = input(title='', defval=color.rgb(0, 255, 255), group='Price level', inline='EMA3_TF4')
+EMA4_TF4Colour= input(title='', defval=color.rgb(0, 255, 255), group='Price level', inline='EMA4_TF4')
+
+// variables that handle line width
+EMA1_TF1LineWidth = input(1, 'Thickness', group='Price level', inline='EMA1_TF1')
+EMA2_TF1LineWidth= input(1, 'Thickness', group='Price level', inline='EMA2_TF1')
+EMA3_TF1LineWidth= input(1, 'Thickness', group='Price level', inline='EMA3_TF1')
+EMA4_TF1LineWidth = input(1, 'Thickness', group='Price level', inline='EMA4_TF1')
+EMA1_TF2LineWidth = input(1, 'Thickness', group='Price level', inline='EMA1_TF2')
+EMA2_TF2LineWidth= input(1, 'Thickness', group='Price level', inline='EMA2_TF2')
+EMA3_TF2LineWidth= input(1, 'Thickness', group='Price level', inline='EMA3_TF2')
+EMA4_TF2LineWidth = input(1, 'Thickness', group='Price level', inline='EMA4_TF2')
+EMA1_TF3LineWidth = input(1, 'Thickness', group='Price level', inline='EMA1_TF3')
+EMA2_TF3LineWidth= input(1, 'Thickness', group='Price level', inline='EMA2_TF3')
+EMA3_TF3LineWidth= input(1, 'Thickness', group='Price level', inline='EMA3_TF3')
+EMA4_TF3LineWidth = input(1, 'Thickness', group='Price level', inline='EMA4_TF3')
+EMA1_TF4LineWidth = input(1, 'Thickness', group='Price level', inline='EMA1_TF4')
+EMA2_TF4LineWidth= input(1, 'Thickness', group='Price level', inline='EMA2_TF4')
+EMA3_TF4LineWidth= input(1, 'Thickness', group='Price level', inline='EMA3_TF4')
+EMA4_TF4LineWidth = input(1, 'Thickness', group='Price level', inline='EMA4_TF4')
+
+// variables that handle line style options insettings menu
+EMA1_TF1StyleOption = input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA1_TF1')
+EMA2_TF1StyleOption= input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA2_TF1')
+EMA3_TF1StyleOption= input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA3_TF1')
+EMA4_TF1StyleOption = input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA4_TF1')
+EMA1_TF2StyleOption = input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA1_TF2')
+EMA2_TF2StyleOption= input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA2_TF2')
+EMA3_TF2StyleOption= input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA3_TF2')
+EMA4_TF2StyleOption = input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA4_TF2')
+EMA1_TF3StyleOption = input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA1_TF3')
+EMA2_TF3StyleOption= input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA2_TF3')
+EMA3_TF3StyleOption= input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA3_TF3')
+EMA4_TF3StyleOption = input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA4_TF3')
+EMA1_TF4StyleOption = input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA1_TF4')
+EMA2_TF4StyleOption= input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA2_TF4')
+EMA3_TF4StyleOption= input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA3_TF4')
+EMA4_TF4StyleOption = input.string('solid (─)', title='', options=['solid (─)', 'dotted (..)', 'dashed (╌)'], group='Price level', inline='EMA4_TF4')
+
+// variables that handle line style once chosen in settings menu
+EMA1_TF1LineStyle = EMA1_TF1StyleOption == 'dotted (..)' ? line.style_dotted : EMA1_TF1StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA2_TF1LineStyle = EMA2_TF1StyleOption == 'dotted (..)' ? line.style_dotted : EMA2_TF1StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA3_TF1LineStyle = EMA3_TF1StyleOption == 'dotted (..)' ? line.style_dotted : EMA3_TF1StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA4_TF1LineStyle = EMA4_TF1StyleOption == 'dotted (..)' ? line.style_dotted : EMA4_TF1StyleOption == 'dashed (╌)' ? line.style_dashed :line.style_solid
+EMA1_TF2LineStyle = EMA1_TF2StyleOption == 'dotted (..)' ? line.style_dotted : EMA1_TF2StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA2_TF2LineStyle = EMA2_TF2StyleOption == 'dotted (..)' ? line.style_dotted : EMA2_TF2StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA3_TF2LineStyle = EMA3_TF2StyleOption == 'dotted (..)' ? line.style_dotted : EMA3_TF2StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA4_TF2LineStyle = EMA4_TF2StyleOption == 'dotted (..)' ? line.style_dotted : EMA4_TF2StyleOption == 'dashed (╌)' ? line.style_dashed :line.style_solid
+EMA1_TF3LineStyle = EMA1_TF3StyleOption == 'dotted (..)' ? line.style_dotted : EMA1_TF3StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA2_TF3LineStyle = EMA2_TF3StyleOption == 'dotted (..)' ? line.style_dotted : EMA2_TF3StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA3_TF3LineStyle = EMA3_TF3StyleOption == 'dotted (..)' ? line.style_dotted : EMA3_TF3StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA4_TF3LineStyle = EMA4_TF3StyleOption == 'dotted (..)' ? line.style_dotted : EMA4_TF3StyleOption == 'dashed (╌)' ? line.style_dashed :line.style_solid
+EMA1_TF4LineStyle = EMA1_TF4StyleOption == 'dotted (..)' ? line.style_dotted : EMA1_TF4StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA2_TF4LineStyle = EMA2_TF4StyleOption == 'dotted (..)' ? line.style_dotted : EMA2_TF4StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA3_TF4LineStyle = EMA3_TF4StyleOption == 'dotted (..)' ? line.style_dotted : EMA3_TF4StyleOption == 'dashed (╌)' ? line.style_dashed : line.style_solid
+EMA4_TF4LineStyle = EMA4_TF4StyleOption == 'dotted (..)' ? line.style_dotted : EMA4_TF4StyleOption == 'dashed (╌)' ? line.style_dashed :line.style_solid
+
+
+// variables that handles the price level for each EMA/TF
+EMA1_TF1Price = input.bool(true, title='TF1 EMA 1', group='Price axis')
+EMA2_TF1Price= input.bool(true, title='TF1 EMA 2', group='Price axis')
+EMA3_TF1Price= input.bool(true, title='TF1 EMA 3', group='Price axis')
+EMA4_TF1Price = input.bool(true, title='TF1 EMA 4', group='Price axis')
+EMA1_TF2Price = input.bool(true, title='TF2 EMA 1', group='Price axis')
+EMA2_TF2Price= input.bool(true, title='TF2 EMA 2', group='Price axis')
+EMA3_TF2Price= input.bool(true, title='TF2 EMA 3', group='Price axis')
+EMA4_TF2Price = input.bool(true, title='TF2 EMA 4', group='Price axis')
+EMA1_TF3Price = input.bool(true, title='TF3 EMA 1', group='Price axis')
+EMA2_TF3Price= input.bool(true, title='TF3 EMA 2', group='Price axis')
+EMA3_TF3Price= input.bool(true, title='TF3 EMA 3', group='Price axis')
+EMA4_TF3Price = input.bool(true, title='TF3 EMA 4', group='Price axis')
+EMA1_TF4Price = input.bool(true, title='TF4 EMA 1', group='Price axis')
+EMA2_TF4Price= input.bool(true, title='TF4 EMA 2', group='Price axis')
+EMA3_TF4Price= input.bool(true, title='TF4 EMA 3', group='Price axis')
+EMA4_TF4Price = input.bool(true, title='TF4 EMA 4', group='Price axis')
+
+
+// initialise variable as "na". These variables will be updated/over rided each iteration
+var line EMA1_TF1Line = na
+var line EMA2_TF1Line = na
+var line EMA3_TF1Line = na
+var line EMA4_TF1Line = na
+var line EMA1_TF2Line = na
+var line EMA2_TF2Line = na
+var line EMA3_TF2Line = na
+var line EMA4_TF2Line = na
+var line EMA1_TF3Line = na
+var line EMA2_TF3Line = na
+var line EMA3_TF3Line = na
+var line EMA4_TF3Line = na
+var line EMA1_TF4Line = na
+var line EMA2_TF4Line = na
+var line EMA3_TF4Line = na
+var line EMA4_TF4Line = na
+
+
+var label EMA1_TF1Label = na
+var label EMA2_TF1Label = na
+var label EMA3_TF1Label = na
+var label EMA4_TF1Label = na
+var label EMA1_TF2Label = na
+var label EMA2_TF2Label = na
+var label EMA3_TF2Label = na
+var label EMA4_TF2Label = na
+var label EMA1_TF3Label = na
+var label EMA2_TF3Label = na
+var label EMA3_TF3Label = na
+var label EMA4_TF3Label = na
+var label EMA1_TF4Label = na
+var label EMA2_TF4Label = na
+var label EMA3_TF4Label = na
+var label EMA4_TF4Label = na
+
+var float EMA1_TF1_val = na
+var float EMA2_TF1_val = na
+var float EMA3_TF1_val = na
+var float EMA4_TF1_val = na
+var float EMA1_TF2_val = na
+var float EMA2_TF2_val = na
+var float EMA3_TF2_val = na
+var float EMA4_TF2_val = na
+var float EMA1_TF3_val = na
+var float EMA2_TF3_val = na
+var float EMA3_TF3_val = na
+var float EMA4_TF3_val = na
+var float EMA1_TF4_val = na
+var float EMA2_TF4_val = na
+var float EMA3_TF4_val = na
+var float EMA4_TF4_val = na
+
+var int bar_index_open = na
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// find price level for each time frame/ema value that was selected by the user
+EMA1_TF1_val := request.security(syminfo.tickerid, EMA_TF1_tf, ta.ema(src,EMA1_TF1))
+EMA2_TF1_val := request.security(syminfo.tickerid, EMA_TF1_tf, ta.ema(src,EMA2_TF1))
+EMA3_TF1_val := request.security(syminfo.tickerid, EMA_TF1_tf, ta.ema(src,EMA3_TF1))
+EMA4_TF1_val := request.security(syminfo.tickerid, EMA_TF1_tf, ta.ema(src,EMA4_TF1))
+EMA1_TF2_val := request.security(syminfo.tickerid, EMA_TF2_tf, ta.ema(src,EMA1_TF2))
+EMA2_TF2_val := request.security(syminfo.tickerid, EMA_TF2_tf, ta.ema(src,EMA2_TF2))
+EMA3_TF2_val := request.security(syminfo.tickerid, EMA_TF2_tf, ta.ema(src,EMA3_TF2))
+EMA4_TF2_val := request.security(syminfo.tickerid, EMA_TF2_tf, ta.ema(src,EMA4_TF2))
+EMA1_TF3_val := request.security(syminfo.tickerid, EMA_TF3_tf, ta.ema(src,EMA1_TF3))
+EMA2_TF3_val := request.security(syminfo.tickerid, EMA_TF3_tf, ta.ema(src,EMA2_TF3))
+EMA3_TF3_val := request.security(syminfo.tickerid, EMA_TF3_tf, ta.ema(src,EMA3_TF3))
+EMA4_TF3_val := request.security(syminfo.tickerid, EMA_TF3_tf, ta.ema(src,EMA4_TF3))
+EMA1_TF4_val := request.security(syminfo.tickerid, EMA_TF4_tf, ta.ema(src,EMA1_TF4))
+EMA2_TF4_val := request.security(syminfo.tickerid, EMA_TF4_tf, ta.ema(src,EMA2_TF4))
+EMA3_TF4_val := request.security(syminfo.tickerid, EMA_TF4_tf, ta.ema(src,EMA3_TF4))
+EMA4_TF4_val := request.security(syminfo.tickerid, EMA_TF4_tf, ta.ema(src,EMA4_TF4))
+
+
+// This updated function now accepts user-defined colors for the difference text
+f_addTableRow(tableId, row, name, value, rawDiff, bgColor, nameValueTextColor, posDiffColorParam, negDiffColorParam, textSize) =>
+    // Determine color for the 'Difference' column using the new parameters
+    diffColor = rawDiff >= 0 ? posDiffColorParam : negDiffColorParam
+    
+    // Column 1: EMA Name
+    table.cell(tableId, 0, row, name, bgcolor = bgColor, text_color = nameValueTextColor, text_halign=text.align_left, text_size = textSize)
+    // Column 2: EMA Price
+    table.cell(tableId, 1, row, value, bgcolor = bgColor, text_color = nameValueTextColor, text_halign = text.align_right, text_size = textSize)
+    // Column 3: Price Difference
+    table.cell(tableId, 2, row, str.tostring(rawDiff, format.mintick), bgcolor = bgColor, text_color = diffColor, text_halign = text.align_right, text_size = textSize)
+
+
+// Custom function to sort the EmaInfo array (Corrected Final Version)
+sortEmaArrayByValue(EmaInfo[] arr, bool isDescending) =>
+    int n = array.size(arr)
+    if n > 1
+        for i = 0 to n - 2
+            for j = 0 to n - i - 2
+                EmaInfo element_j = array.get(arr, j)
+                EmaInfo element_j1 = array.get(arr, j + 1)
+                
+                // Use the boolean to decide the comparison logic
+                bool shouldSwap = isDescending ? element_j.value < element_j1.value : element_j.value > element_j1.value
+
+                if shouldSwap
+                    array.set(arr, j, element_j1)
+                    array.set(arr, j + 1, element_j)
+    arr // Return the modified array
+
+// NEW -- Final Table logic with selectable background color modes
+if showTable
+    // 1. Create an array to hold all EMA info objects
+    EmaInfo[] emaDataArray = array.new<EmaInfo>()
+
+    // 2. Populate the array with the data for ALL 16 EMAs (using line color as the default background)
+    array.push(emaDataArray, EmaInfo.new(EMA1_TF1_name, EMA1_TF1_val, EMA1_TF1Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA2_TF1_name, EMA2_TF1_val, EMA2_TF1Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA3_TF1_name, EMA3_TF1_val, EMA3_TF1Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA4_TF1_name, EMA4_TF1_val, EMA4_TF1Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA1_TF2_name, EMA1_TF2_val, EMA1_TF2Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA2_TF2_name, EMA2_TF2_val, EMA2_TF2Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA3_TF2_name, EMA3_TF2_val, EMA3_TF2Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA4_TF2_name, EMA4_TF2_val, EMA4_TF2Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA1_TF3_name, EMA1_TF3_val, EMA1_TF3Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA2_TF3_name, EMA2_TF3_val, EMA2_TF3Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA3_TF3_name, EMA3_TF3_val, EMA3_TF3Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA4_TF3_name, EMA4_TF3_val, EMA4_TF3Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA1_TF4_name, EMA1_TF4_val, EMA1_TF4Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA2_TF4_name, EMA2_TF4_val, EMA2_TF4Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA3_TF4_name, EMA3_TF4_val, EMA3_TF4Colour))
+    array.push(emaDataArray, EmaInfo.new(EMA4_TF4_name, EMA4_TF4_val, EMA4_TF4Colour))
+
+
+    // 3. If "Ordered" is selected, add the current price to the array to be sorted
+    if tableLayout == "Ordered"
+        array.push(emaDataArray, EmaInfo.new("--- CURRENT PRICE ---", close, currPriceRowBgColor))
+        sortEmaArrayByValue(emaDataArray, true)
+
+    // 3b. NEW -- If "Price Comparison" mode is selected, override the background colors
+    if rowBgColorMode == "Price Diff."
+        for i = 0 to array.size(emaDataArray) - 1
+            EmaInfo currentItem = array.get(emaDataArray, i)
+            // Only change EMA rows, not the special "Current Price" row
+            if currentItem.name != "--- CURRENT PRICE ---"
+                color newBgColor = currentItem.value >= close ? bgColorAbove : bgColorBelow
+                currentItem.rowColor := newBgColor // Update the color in the object
+
+    // 4. Initialize and clear the table
+    var table emaTable = table.new(tablePosition, 3, 26, border_width = 1) 
+    table.clear(emaTable, 0, 0, 2, 25) 
+
+    // 5. Draw the headers
+    table.cell(emaTable, 0, 0, 'Moving Average', bgcolor = headerBgColor, text_color = headerTextColor, text_halign=text.align_center, text_size = tableTextSize)
+    table.cell(emaTable, 1, 0, 'Price', bgcolor = headerBgColor, text_color = headerTextColor, text_halign=text.align_center, text_size = tableTextSize)
+    table.cell(emaTable, 2, 0, 'Difference', bgcolor = headerBgColor, text_color = headerTextColor, text_halign=text.align_center, text_size = tableTextSize)
+    
+    // 6. Loop through the array and build the table rows
+    for i = 0 to array.size(emaDataArray) - 1
+        EmaInfo currentItem = array.get(emaDataArray, i)
+        
+        string name = currentItem.name
+        string valueStr = str.tostring(currentItem.value, format.mintick)
+        float diff = 0.0
+        color nameValueTextColor = emaRowTextColor
+
+        if name == "--- CURRENT PRICE ---"
+            diff := 0.0 
+            nameValueTextColor := currPriceRowTextColor
+        else
+            diff := currentItem.value - close
+
+        f_addTableRow(emaTable, i + 1, name, valueStr, diff, currentItem.rowColor, nameValueTextColor, posDiffColor, negDiffColor, tableTextSize)
+
+
+
+
+// based on setting chosen adjust start point of where line will be drawn
+if session.isfirstbar and levelSetting=='a'
+    bar_index_open := bar_index
+if levelSetting=='b'
+    bar_index_open := bar_index + EMA_LineOffset
+
+// delete existing price line and labels so it doesn't clutter the chart with all lines drawn. Only want to see new lines on chart
+line.delete(EMA1_TF1Line)
+label.delete(EMA1_TF1Label)
+line.delete(EMA2_TF1Line)
+label.delete(EMA2_TF1Label)
+line.delete(EMA3_TF1Line)
+label.delete(EMA3_TF1Label)
+line.delete(EMA4_TF1Line)
+label.delete(EMA4_TF1Label)
+line.delete(EMA1_TF2Line)
+label.delete(EMA1_TF2Label)
+line.delete(EMA2_TF2Line)
+label.delete(EMA2_TF2Label)
+line.delete(EMA3_TF2Line)
+label.delete(EMA3_TF2Label)
+line.delete(EMA4_TF2Line)
+label.delete(EMA4_TF2Label)
+line.delete(EMA1_TF3Line)
+label.delete(EMA1_TF3Label)
+line.delete(EMA2_TF3Line)
+label.delete(EMA2_TF3Label)
+line.delete(EMA3_TF3Line)
+label.delete(EMA3_TF3Label)
+line.delete(EMA4_TF3Line)
+label.delete(EMA4_TF3Label)
+line.delete(EMA1_TF4Line)
+label.delete(EMA1_TF4Label)
+line.delete(EMA2_TF4Line)
+label.delete(EMA2_TF4Label)
+line.delete(EMA3_TF4Line)
+label.delete(EMA3_TF4Label)
+line.delete(EMA4_TF4Line)
+label.delete(EMA4_TF4Label)
+
+
+// NEW -- Only draw if the master switch is on
+if showDrawings
+    // lines and labels drawn with settings chosen and price levels calculated prior, for each time frame/EMA.
+    if timeframe.isintraday
+        if EMA1_TF1Level
+            EMA1_TF1Line := line.new(bar_index_open, EMA1_TF1_val, bar_index+10, EMA1_TF1_val, color=EMA1_TF1Colour, style=EMA1_TF1LineStyle, width=EMA1_TF1LineWidth, extend=levelSetting=='c' ? extend.both : extend.right) 
+        if EMA1_TF1LabelBool
+            EMA1_TF1Label := label.new(bar_index + EMA1_TF1Offset, EMA1_TF1_val, text=EMA1_TF1LabelPriceBool ? str.tostring(EMA1_TF1) + ' '+EMA1_TF1LabelText + ' '+ str.tostring(EMA1_TF1_val,format.mintick) : EMA1_TF1LabelText, color=EMA1_TF1Colour, style=label.style_none, textcolor=EMA1_TF1Colour, size=txt_size, textalign=EMA1_TF1LabelAlign) //size=size.large, 
+        if EMA2_TF1Level
+            EMA2_TF1Line := line.new(bar_index_open, EMA2_TF1_val, bar_index+10, EMA2_TF1_val, color=EMA2_TF1Colour, style=EMA2_TF1LineStyle, width=EMA2_TF1LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA2_TF1LabelBool
+            EMA2_TF1Label := label.new(bar_index + EMA2_TF1Offset, EMA2_TF1_val, text=EMA2_TF1LabelPriceBool ? str.tostring(EMA2_TF1) + ' '+EMA2_TF1LabelText + ' '+ str.tostring(EMA2_TF1_val,format.mintick) : EMA2_TF1LabelText, color=EMA2_TF1Colour, style=label.style_none, textcolor=EMA2_TF1Colour, size=txt_size, textalign=EMA2_TF1LabelAlign)
+        if EMA3_TF1Level
+            EMA3_TF1Line := line.new(bar_index_open, EMA3_TF1_val, bar_index+10, EMA3_TF1_val, color=EMA3_TF1Colour, style=EMA3_TF1LineStyle, width=EMA3_TF1LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA3_TF1LabelBool
+            EMA3_TF1Label := label.new(bar_index + EMA3_TF1Offset, EMA3_TF1_val, text=EMA3_TF1LabelPriceBool ? str.tostring(EMA3_TF1) + ' '+EMA3_TF1LabelText + ' '+ str.tostring(EMA3_TF1_val,format.mintick) : EMA3_TF1LabelText, color=EMA3_TF1Colour, style=label.style_none, textcolor=EMA3_TF1Colour, size=txt_size, textalign=EMA3_TF1LabelAlign)
+        if EMA4_TF1Level
+            EMA4_TF1Line := line.new(bar_index_open, EMA4_TF1_val, bar_index+10, EMA4_TF1_val, color=EMA4_TF1Colour, style=EMA4_TF1LineStyle, width=EMA4_TF1LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA4_TF1LabelBool
+            EMA4_TF1Label := label.new(bar_index + EMA4_TF1Offset, EMA4_TF1_val, text=EMA4_TF1LabelPriceBool ? str.tostring(EMA4_TF1) + ' '+EMA4_TF1LabelText + ' '+ str.tostring(EMA4_TF1_val,format.mintick) : EMA4_TF1LabelText, color=EMA4_TF1Colour, style=label.style_none, textcolor=EMA4_TF1Colour, size=txt_size, textalign=EMA4_TF1LabelAlign)
+
+        if EMA1_TF2Level
+            EMA1_TF2Line := line.new(bar_index_open, EMA1_TF2_val, bar_index+10, EMA1_TF2_val, color=EMA1_TF2Colour, style=EMA1_TF2LineStyle, width=EMA1_TF2LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA1_TF2LabelBool
+            EMA1_TF2Label := label.new(bar_index + EMA1_TF2Offset, EMA1_TF2_val, text=EMA1_TF2LabelPriceBool ? str.tostring(EMA1_TF2) + ' '+EMA1_TF2LabelText + ' '+ str.tostring(EMA1_TF2_val,format.mintick) : EMA1_TF2LabelText, color=EMA1_TF2Colour, style=label.style_none, textcolor=EMA1_TF2Colour, size=txt_size, textalign=EMA1_TF2LabelAlign)
+        if EMA2_TF2Level
+            EMA2_TF2Line := line.new(bar_index_open, EMA2_TF2_val, bar_index+10, EMA2_TF2_val, color=EMA2_TF2Colour, style=EMA2_TF2LineStyle, width=EMA2_TF2LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA2_TF2LabelBool
+            EMA2_TF2Label := label.new(bar_index + EMA2_TF2Offset, EMA2_TF2_val, text=EMA2_TF2LabelPriceBool ? str.tostring(EMA2_TF2) + ' '+EMA2_TF2LabelText + ' '+ str.tostring(EMA2_TF2_val,format.mintick) : EMA2_TF2LabelText, color=EMA2_TF2Colour, style=label.style_none, textcolor=EMA2_TF2Colour, size=txt_size, textalign=EMA2_TF2LabelAlign)
+        if EMA3_TF2Level
+            EMA3_TF2Line := line.new(bar_index_open, EMA3_TF2_val, bar_index+10, EMA3_TF2_val, color=EMA3_TF2Colour, style=EMA3_TF2LineStyle, width=EMA3_TF2LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA3_TF2LabelBool
+            EMA3_TF2Label := label.new(bar_index + EMA3_TF2Offset, EMA3_TF2_val, text=EMA3_TF2LabelPriceBool ? str.tostring(EMA3_TF2) + ' '+EMA3_TF2LabelText + ' '+ str.tostring(EMA3_TF2_val,format.mintick) : EMA3_TF2LabelText, color=EMA3_TF2Colour, style=label.style_none, textcolor=EMA3_TF2Colour,size=txt_size, textalign=EMA3_TF2LabelAlign)
+        if EMA4_TF2Level
+            EMA4_TF2Line := line.new(bar_index_open, EMA4_TF2_val, bar_index+10, EMA4_TF2_val, color=EMA4_TF2Colour, style=EMA4_TF2LineStyle, width=EMA4_TF2LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA4_TF2LabelBool
+            EMA4_TF2Label := label.new(bar_index + EMA4_TF2Offset, EMA4_TF2_val, text=EMA4_TF2LabelPriceBool ? str.tostring(EMA4_TF2) + ' '+EMA4_TF2LabelText + ' '+ str.tostring(EMA4_TF2_val,format.mintick) : EMA4_TF2LabelText, color=EMA4_TF2Colour, style=label.style_none, textcolor=EMA4_TF2Colour, size=txt_size, textalign=EMA4_TF2LabelAlign)
+
+        if EMA1_TF3Level
+            EMA1_TF3Line := line.new(bar_index_open, EMA1_TF3_val, bar_index+10, EMA1_TF3_val, color=EMA1_TF3Colour, style=EMA1_TF3LineStyle, width=EMA1_TF3LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA1_TF3LabelBool
+            EMA1_TF3Label := label.new(bar_index + EMA1_TF3Offset, EMA1_TF3_val, text=EMA1_TF3LabelPriceBool ? str.tostring(EMA1_TF3) + ' '+EMA1_TF3LabelText + ' '+ str.tostring(EMA1_TF3_val,format.mintick) : EMA1_TF3LabelText, color=EMA1_TF3Colour, style=label.style_none, textcolor=EMA1_TF3Colour, size=txt_size, textalign=EMA1_TF3LabelAlign)
+        if EMA2_TF3Level
+            EMA2_TF3Line := line.new(bar_index_open, EMA2_TF3_val, bar_index+10, EMA2_TF3_val, color=EMA2_TF3Colour, style=EMA2_TF3LineStyle, width=EMA2_TF3LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA2_TF3LabelBool
+            EMA2_TF3Label := label.new(bar_index + EMA2_TF3Offset, EMA2_TF3_val, text=EMA2_TF3LabelPriceBool ? str.tostring(EMA2_TF3) + ' '+EMA2_TF3LabelText + ' '+ str.tostring(EMA2_TF3_val,format.mintick) : EMA2_TF3LabelText, color=EMA2_TF3Colour, style=label.style_none, textcolor=EMA2_TF3Colour, size=txt_size, textalign=EMA2_TF3LabelAlign)
+        if EMA3_TF3Level
+            EMA3_TF3Line := line.new(bar_index_open, EMA3_TF3_val, bar_index+10, EMA3_TF3_val, color=EMA3_TF3Colour, style=EMA3_TF3LineStyle, width=EMA3_TF3LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA3_TF3LabelBool
+            EMA3_TF3Label := label.new(bar_index + EMA3_TF3Offset, EMA3_TF3_val, text=EMA3_TF3LabelPriceBool ? str.tostring(EMA3_TF3) + ' '+EMA3_TF3LabelText + ' '+ str.tostring(EMA3_TF3_val,format.mintick) : EMA3_TF3LabelText, color=EMA3_TF3Colour, style=label.style_none, textcolor=EMA3_TF3Colour, size=txt_size, textalign=EMA3_TF3LabelAlign)
+        if EMA4_TF3Level
+            EMA4_TF3Line := line.new(bar_index_open, EMA4_TF3_val, bar_index+10, EMA4_TF3_val, color=EMA4_TF3Colour, style=EMA4_TF3LineStyle, width=EMA4_TF3LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA4_TF3LabelBool
+            EMA4_TF3Label := label.new(bar_index + EMA4_TF3Offset, EMA4_TF3_val, text=EMA4_TF3LabelPriceBool ? str.tostring(EMA4_TF3) + ' '+EMA4_TF3LabelText + ' '+ str.tostring(EMA4_TF3_val,format.mintick) : EMA4_TF3LabelText, color=EMA4_TF3Colour, style=label.style_none, textcolor=EMA4_TF3Colour, size=txt_size, textalign=EMA4_TF3LabelAlign)
+
+        if EMA1_TF4Level
+            EMA1_TF4Line := line.new(bar_index_open, EMA1_TF4_val, bar_index+10, EMA1_TF4_val, color=EMA1_TF4Colour, style=EMA1_TF4LineStyle, width=EMA1_TF4LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA1_TF4LabelBool
+            EMA1_TF4Label := label.new(bar_index + EMA1_TF4Offset, EMA1_TF4_val, text=EMA1_TF4LabelPriceBool ? str.tostring(EMA1_TF4) + ' '+EMA1_TF4LabelText + ' '+ str.tostring(EMA1_TF4_val,format.mintick) : EMA1_TF4LabelText, color=EMA1_TF4Colour, style=label.style_none, textcolor=EMA1_TF4Colour, size=txt_size, textalign=EMA1_TF4LabelAlign)
+        if EMA2_TF4Level
+            EMA2_TF4Line := line.new(bar_index_open, EMA2_TF4_val, bar_index+10, EMA2_TF4_val, color=EMA2_TF4Colour, style=EMA2_TF4LineStyle, width=EMA2_TF4LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA2_TF4LabelBool
+            EMA2_TF4Label := label.new(bar_index + EMA2_TF4Offset, EMA2_TF4_val, text=EMA2_TF4LabelPriceBool ? str.tostring(EMA2_TF4) + ' '+EMA2_TF4LabelText + ' '+ str.tostring(EMA2_TF4_val,format.mintick) : EMA2_TF4LabelText, color=EMA2_TF4Colour, style=label.style_none, textcolor=EMA2_TF4Colour, size=txt_size, textalign=EMA2_TF4LabelAlign)
+        if EMA3_TF4Level
+            EMA3_TF4Line := line.new(bar_index_open, EMA3_TF4_val, bar_index+10, EMA3_TF4_val, color=EMA3_TF4Colour, style=EMA3_TF4LineStyle, width=EMA3_TF4LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA3_TF4LabelBool
+            EMA3_TF4Label := label.new(bar_index + EMA3_TF4Offset, EMA3_TF4_val, text=EMA3_TF4LabelPriceBool ? str.tostring(EMA3_TF4) + ' '+EMA3_TF4LabelText + ' '+ str.tostring(EMA3_TF4_val,format.mintick) : EMA3_TF4LabelText, color=EMA3_TF4Colour, style=label.style_none, textcolor=EMA3_TF4Colour, size=txt_size, textalign=EMA3_TF4LabelAlign)
+        if EMA4_TF4Level
+            EMA4_TF4Line := line.new(bar_index_open, EMA4_TF4_val, bar_index+10, EMA4_TF4_val, color=EMA4_TF4Colour, style=EMA4_TF4LineStyle, width=EMA4_TF4LineWidth, extend=levelSetting=='c' ? extend.both : extend.right)
+        if EMA4_TF4LabelBool
+            EMA4_TF4Label := label.new(bar_index + EMA4_TF4Offset, EMA4_TF4_val, text=EMA4_TF4LabelPriceBool ? str.tostring(EMA4_TF4) + ' '+EMA4_TF4LabelText + ' '+ str.tostring(EMA4_TF4_val,format.mintick) : EMA4_TF4LabelText, color=EMA4_TF4Colour, style=label.style_none, textcolor=EMA4_TF4Colour, size=txt_size, textalign=EMA4_TF4LabelAlign)
+
+
+
+    // set location of label for x axis (time axis)
+    label.set_x(EMA1_TF1Label, bar_index + EMA1_TF1Offset) 
+    label.set_x(EMA2_TF1Label, bar_index + EMA2_TF1Offset)
+    label.set_x(EMA3_TF1Label, bar_index + EMA3_TF1Offset)
+    label.set_x(EMA4_TF1Label, bar_index + EMA4_TF1Offset)
+    label.set_x(EMA1_TF2Label, bar_index + EMA1_TF2Offset) 
+    label.set_x(EMA2_TF2Label, bar_index + EMA2_TF2Offset)
+    label.set_x(EMA3_TF2Label, bar_index + EMA3_TF2Offset)
+    label.set_x(EMA4_TF2Label, bar_index + EMA4_TF2Offset)
+    label.set_x(EMA1_TF3Label, bar_index + EMA1_TF3Offset) 
+    label.set_x(EMA2_TF3Label, bar_index + EMA2_TF3Offset)
+    label.set_x(EMA3_TF3Label, bar_index + EMA3_TF3Offset)
+    label.set_x(EMA4_TF3Label, bar_index + EMA4_TF3Offset)
+    label.set_x(EMA1_TF4Label, bar_index + EMA1_TF4Offset) 
+    label.set_x(EMA2_TF4Label, bar_index + EMA2_TF4Offset)
+    label.set_x(EMA3_TF4Label, bar_index + EMA3_TF4Offset)
+    label.set_x(EMA4_TF4Label, bar_index + EMA4_TF4Offset)
+
+
+// plotting the label only (no lines)
+plot(showDrawings and timeframe.isintraday and EMA1_TF1Price and timeframePlot ? EMA1_TF1_val : na, color=EMA1_TF1Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA2_TF1Price and timeframePlot ? EMA2_TF1_val : na, color=EMA2_TF1Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA3_TF1Price and timeframePlot ? EMA3_TF1_val : na, color=EMA3_TF1Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA4_TF1Price and timeframePlot ? EMA4_TF1_val : na, color=EMA4_TF1Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA1_TF2Price and timeframePlot ? EMA1_TF2_val : na, color=EMA1_TF2Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA2_TF2Price and timeframePlot ? EMA2_TF2_val : na, color=EMA2_TF2Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA3_TF2Price and timeframePlot ? EMA3_TF2_val : na, color=EMA3_TF2Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA4_TF2Price and timeframePlot ? EMA4_TF2_val : na, color=EMA4_TF2Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA1_TF3Price and timeframePlot ? EMA1_TF3_val : na, color=EMA1_TF3Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA2_TF3Price and timeframePlot ? EMA2_TF3_val : na, color=EMA2_TF3Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA3_TF3Price and timeframePlot ? EMA3_TF3_val : na, color=EMA3_TF3Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA4_TF3Price and timeframePlot ? EMA4_TF3_val : na, color=EMA4_TF3Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA1_TF4Price and timeframePlot ? EMA1_TF4_val : na, color=EMA1_TF4Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA2_TF4Price and timeframePlot ? EMA2_TF4_val : na, color=EMA2_TF4Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA3_TF4Price and timeframePlot ? EMA3_TF4_val : na, color=EMA3_TF4Colour, editable=false, display=display.price_scale)
+plot(showDrawings and timeframe.isintraday and EMA4_TF4Price and timeframePlot ? EMA4_TF4_val : na, color=EMA4_TF4Colour, editable=false, display=display.price_scale)
+
+
+// alert settings (cannot use dynamic values in alert setting :( for more info: https://www.tradingcode.net/tradingview/program-alerts/ )
+//EMA1_TF1_title = str.tostring(EMA1_TF1) + ' EMA TF1 cross'
+// variables that will "find" when price crosses the line (both up and down) . Will return True upon crossing
+EMA1_TF1_cross = ta.cross(close,EMA1_TF1_val)
+EMA2_TF1_cross = ta.cross(close,EMA2_TF1_val)
+EMA3_TF1_cross = ta.cross(close,EMA3_TF1_val)
+EMA4_TF1_cross = ta.cross(close,EMA4_TF1_val)
+EMA1_TF2_cross = ta.cross(close,EMA1_TF2_val)
+EMA2_TF2_cross = ta.cross(close,EMA2_TF2_val)
+EMA3_TF2_cross = ta.cross(close,EMA3_TF2_val)
+EMA4_TF2_cross = ta.cross(close,EMA4_TF2_val)
+EMA1_TF3_cross = ta.cross(close,EMA1_TF3_val) 
+EMA2_TF3_cross = ta.cross(close,EMA2_TF3_val)
+EMA3_TF3_cross = ta.cross(close,EMA3_TF3_val)
+EMA4_TF3_cross = ta.cross(close,EMA4_TF3_val)
+EMA1_TF4_cross = ta.cross(close,EMA1_TF4_val)
+EMA2_TF4_cross = ta.cross(close,EMA2_TF4_val)
+EMA3_TF4_cross = ta.cross(close,EMA3_TF4_val)
+EMA4_TF4_cross = ta.cross(close,EMA4_TF4_val)
+
+// when above variables are "True" alert will go off. Also define title of alert and default alert message when triggered. 
+alertcondition(EMA1_TF1_cross, title='TF1 EMA 1 cross', message='Price crossed TF1 EMA 1!')
+alertcondition(EMA2_TF1_cross, title='TF1 EMA 2 cross', message='Price crossed TF1 EMA 2!')
+alertcondition(EMA3_TF1_cross, title='TF1 EMA 3 cross', message='Price crossed TF1 EMA 3!')
+alertcondition(EMA4_TF1_cross, title='TF1 EMA 4 cross', message='Price crossed TF1 EMA 4!')
+alertcondition(EMA1_TF2_cross, title='TF2 EMA 1 cross', message='Price crossed TF2 EMA 1!')
+alertcondition(EMA2_TF2_cross, title='TF2 EMA 2 cross', message='Price crossed TF2 EMA 2!')
+alertcondition(EMA3_TF2_cross, title='TF2 EMA 3 cross', message='Price crossed TF2 EMA 3!')
+alertcondition(EMA4_TF2_cross, title='TF2 EMA 4 cross', message='Price crossed TF2 EMA 4!')
+alertcondition(EMA1_TF3_cross, title='TF3 EMA 1 cross', message='Price crossed TF3 EMA 1!')
+alertcondition(EMA2_TF3_cross, title='TF3 EMA 2 cross', message='Price crossed TF3 EMA 2!')
+alertcondition(EMA3_TF3_cross, title='TF3 EMA 3 cross', message='Price crossed TF3 EMA 3!')
+alertcondition(EMA4_TF3_cross, title='TF3 EMA 4 cross', message='Price crossed TF3 EMA 4!')
+alertcondition(EMA1_TF4_cross, title='TF4 EMA 1 cross', message='Price crossed TF4 EMA 1!')
+alertcondition(EMA2_TF4_cross, title='TF4 EMA 2 cross', message='Price crossed TF4 EMA 2!')
+alertcondition(EMA3_TF4_cross, title='TF4 EMA 3 cross', message='Price crossed TF4 EMA 3!')
+alertcondition(EMA4_TF4_cross, title='TF4 EMA 4 cross', message='Price crossed TF4 EMA 4!')
+
+
+// Addded Capability: Switch to show Lines/Labels, Table that shows EMA and corresponding price (Table can be turned on/off)
